@@ -88,6 +88,7 @@
 
         <!--Panel derecho, donde se clasifican las lineas-->
         <div class="clasificacionDeLineas" id="right-panel">
+            <!--Contenedor de las pestañas (tab)-->
             <div class="tab-container">
                 <div class="tab active" data-tab="lexico">Léxico</div>
                 <div class="tab" data-tab="sintactico">Sintáctico</div>
@@ -109,6 +110,7 @@
                     <h2>Análisis Semántico</h2>
                     <textarea class="textarea" id="semanticoContent" readonly></textarea>
                 </div>
+                <!--Tabla donde se clasifican los hash-->
                 <div class="tab-content" id="hash-table">
                     <h2>Tabla Hash</h2>
                     <table id="hashTable">
@@ -129,8 +131,31 @@
 
         <!--Panel inferior, donde se muestran los errores-->
         <div class="consola" id="bottom-panel">
-            <h2>Consola</h2>
-            <textarea class="textareaconsola" id="consola" readonly></textarea>
+            <div class="tab-container">
+                <div class="tab-consola active" data-tab="consola-erroreslex">Errores Léxicos</div>
+                <div class="tab-consola" data-tab="consola-erroressin">Errores Sintácticos</div>
+                <div class="tab-consola" data-tab="consola-erroressem">Errores Semánticos</div>
+                <div class="tab-consola" data-tab="consola-resultados">Resultados</div>
+            </div>
+            <!--Contenedor de los contenidos de los errores-->
+            <div class="content-container">
+                <div class="tab-content-consola active" id="errores-lexicos">
+                    <h2>Errores Léxicos</h2>
+                    <textarea class="textareaconsola" id="erroreslexContent" readonly></textarea>
+                </div>
+                <div class="tab-content-consola" id="errores-sintacticos">
+                    <h2>Errores Sintácticos</h2>
+                    <textarea class="textareaconsola" id="erroressinContent" readonly></textarea>
+                </div>
+                <div class="tab-content-consola" id="errores-semanticos">
+                    <h2>Errores Semánticos</h2>
+                    <textarea class="textareaconsola" id="erroressemContent" readonly></textarea>
+                </div>
+                <div class="tab-content-consola" id="resultados">
+                    <h2>Resultados</h2>
+                    <textarea class="textareaconsola" id="resultados" readonly></textarea>
+                </div>
+            </div>
         </div>
     </div>
     <script src="script.js"></script>
