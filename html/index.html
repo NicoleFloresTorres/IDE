@@ -5,9 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IDE</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        #actionBar{
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 10%;
+            background-color: #f1f1f1;
+        }
+    </style>
 </head>
 <body>
-    <!--Contenedor principal, donde se encuentran los 3 apartados-->
+    <div id="actionBar">
+        <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              File
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Abrir</a></li>
+              <li><a class="dropdown-item" href="#">Guardar </a></li>
+              <li><a class="dropdown-item" href="#">Guardar como</a></li>
+              <li><a class="dropdown-item" href="#">Cerrar</a></li>
+            </ul>
+          </div>
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                Edit
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Action</a></li>
+              <li><a class="dropdown-item" href="#">Another action</a></li>
+              <li><a class="dropdown-item" href="#">Something else here</a></li>
+            </ul>
+          </div>
+          <div class="dropdown">
+            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+              Build and debug
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" href="#">Action</a></li>
+              <li><a class="dropdown-item" href="#">Another action</a></li>
+              <li><a class="dropdown-item" href="#">Something else here</a></li>
+            </ul>
+          </div>
+          <button type="button" class="btn">Guardar</button>
+          <button type="button" class="btn">Abrir</button>
+          <button type="button" class="btn">Guardar como</button>
+          <button type="button" class="btn">Close</button>
+          <button type="button" class="btn">Lexico</button>
+          <button type="button" class="btn">Sintactico</button>
+          <button type="button" class="btn">Semantico</button>
+          <button type="button" class="btn">Compilar</button>
+    </div>
+    
+    <div id="numeralContainer">
+
+    </div>
+    <div id="textContainer">
+
+    </div>
+
     <div class="main-container">
         <div class="apartadoCodigo" id="left-panel">
             <h1>Este es el apartado de codigo</h1>
