@@ -13,13 +13,7 @@ body{
     gap: 20px;
 }
 
-.clasificacionDeLineas{
-    width: calc(50%-10px);
-    background-color: white;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.apartadoCodigo{
+.clasificacionDeLineas, .apartadoCodigo{
     width: calc(50%-10px);
     background-color: white;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -38,7 +32,7 @@ body{
     flex-wrap: wrap;
 }
 
-.tab{
+.tab, .tab-consola{
     padding: 10px 20px;
     cursor: pointer;
     background-color: #f1f1f1;
@@ -47,7 +41,7 @@ body{
     margin-right: 2px;
 }
 
-.tab.active{
+.tab.active, .tab-consola.active{
     background-color: white;
     border-bottom: 1px solid white;
     margin-bottom: -1px;
@@ -60,22 +54,15 @@ body{
     border-top: none;
 }
 
-.bottom-content-container{
-    padding: 20px;
-    min-height: 150px;
-    border: 1px solid #ccc;
-    border-top: none;
-}
-
-.tab-content{
+.tab-content, .tab-content-consola{
     display: none;
 }
 
-.tab-content.active{
+.tab-content.active, .tab-consola.active{
     display: block;
 }
 
-.textarea{
+.textarea, .textareaconsola{
     width: 100%;
     height: 350px;
     resize: none;

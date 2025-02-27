@@ -1,3 +1,4 @@
+//Manejo de pestañas de la parte superior derecha
 document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', function() {
         document.querySelectorAll('.tab').forEach(t => {
@@ -6,6 +7,24 @@ document.querySelectorAll('.tab').forEach(tab => {
         this.classList.add('active');
 
         document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+
+        const tabId = this.getAttribute('data-tab');
+        document.getElementById(tabId).classList.add('active');
+        eel.tab_changed(tabId);
+    });
+});
+
+//Manejo de pestañas de la parte inferior, la consola
+document.querySelectorAll('.tab-consola').forEach(tab => {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.tab-consola').forEach(t => {
+            t.classList.remove('active');
+        });
+        this.classList.add('active');
+
+        document.querySelectorAll('.tab-content-consola').forEach(content => {
             content.classList.remove('active');
         });
 
