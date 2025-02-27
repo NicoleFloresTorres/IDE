@@ -5,15 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IDE</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         #actionBar{
             display: flex;
             flex-direction: row;
             justify-content: space-between;
             align-items: center;
-            width: 100%;
+            padding: 0px 5px;
+            width: 40%;
             height: 10%;
             background-color: #f1f1f1;
+        }
+
+        .imagenesActionBar{
+            width: 20px;
+            height: 20px;
         }
     </style>
 </head>
@@ -24,10 +33,10 @@
               File
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Abrir</a></li>
-              <li><a class="dropdown-item" href="#">Guardar </a></li>
-              <li><a class="dropdown-item" href="#">Guardar como</a></li>
-              <li><a class="dropdown-item" href="#">Cerrar</a></li>
+              <li><a class="dropdown-item href="#">Abrir</a></li>
+              <li><a class="dropdown-item href="#">Guardar </a></li>
+              <li><a class="dropdown-item href="#">Guardar como</a></li>
+              <li><a class="dropdown-item href="#">Cerrar</a></li>
             </ul>
           </div>
           <div class="dropdown">
@@ -50,9 +59,9 @@
               <li><a class="dropdown-item" href="#">Something else here</a></li>
             </ul>
           </div>
-          <button type="button" class="btn">Guardar</button>
-          <button type="button" class="btn">Abrir</button>
-          <button type="button" class="btn">Guardar como</button>
+          <button type="button" class="btn"><img class="imagenesActionBar" src ="assets/guardar.png" alt="Guardar"></button>
+          <button type="button" class="btn"><img class="imagenesActionBar" src="assets/abrir.png" alt="Abrir"></button>
+          <button type="button" class="btn"><img class="imagenesActionBar" src="assets/guardarComo.png" alt="Guardar como"></button>
           <button type="button" class="btn">Close</button>
           <button type="button" class="btn">Lexico</button>
           <button type="button" class="btn">Sintactico</button>
