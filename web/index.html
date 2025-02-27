@@ -7,27 +7,8 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script type="text/javascript" src="/eel.js"></script>
     <style>
-        #actionBar{
-            display: flex;
-            flex-direction: row;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0px 5px;
-            width: 40%;
-            height: 10%;
-            background-color: #f1f1f1;
-        }
-
-        .imagenesActionBar{
-            width: 20px;
-            height: 20px;
-        }
-
-        .dropdown-menu{
-            background-color: #f1f1f1;
-        }
 
     </style>
 </head>
@@ -38,10 +19,10 @@
               File
             </button>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Abrir</a></li>
-              <li><a class="dropdown-item" href="#">Guardar </a></li>
-              <li><a class="dropdown-item" href="#">Guardar como</a></li>
-              <li><a class="dropdown-item" href="#">Cerrar</a></li>
+              <li><a class="dropdown-item" onclick="abrirArchivo()" id="abrir" href="#">Abrir</a></li>
+              <li><a class="dropdown-item" id="guardarDropdown" href="#">Guardar</a></li>
+              <li><a class="dropdown-item" id="guardarComoDropdown" href="#">Guardar como</a></li>
+              <li><a class="dropdown-item" id="cerrar" onclick="cerrarAplicacion()">Cerrar</a></li>
             </ul>
           </div>
           <div class="dropdown">
@@ -64,26 +45,39 @@
               <li><a class="dropdown-item" href="#">Something else here</a></li>
             </ul>
           </div>
-          <button type="button" class="btn"><img class="imagenesActionBar" src ="assets/guardar.png" alt="Guardar"></button>
-          <button type="button" class="btn"><img class="imagenesActionBar" src="assets/abrir.png" alt="Abrir"></button>
-          <button type="button" class="btn"><img class="imagenesActionBar" src="assets/guardarComo.png" alt="Guardar como"></button>
-          <button type="button" class="btn">Close</button>
+          <input type="file" id="fileInput" style="display: none;">
+          <button type="button" class="btn" id="botonGuardar"><img class="imagenesActionBar" src="assets/guardar.png" alt="Guardar"></button>
+          <button type="button" class="btn" id="botonAbrir" onclick="abrirArchivo()"><img class="imagenesActionBar" src="assets/abrir.png" alt="Abrir"></button>
+          <button type="button" class="btn" id="botonGuardarComo"><img class="imagenesActionBar" src="assets/guardarComo.png" alt="Guardar como"></button>
+          <button type="button" class="btn" id="botonCierre" onclick="cerrarAplicacion()">Close</button>
           <button type="button" class="btn">Lexico</button>
           <button type="button" class="btn">Sintactico</button>
           <button type="button" class="btn">Semantico</button>
           <button type="button" class="btn">Compilar</button>
     </div>
-    
-    <div id="numeralContainer">
 
-    </div>
-    <div id="textContainer">
 
-    </div>
 
     <div class="main-container">
-        <div class="apartadoCodigo" id="left-panel">
-            <h1>Este es el apartado de codigo</h1>
+        <div id="numeralContainer">
+            <h1>1</h1>
+            <h1>2</h1>
+            <h1>3</h1>
+            <h1>4</h1>
+            <h1>5</h1>
+            <h1>6</h1>
+            <h1>7</h1>
+            <h1>8</h1>
+            <h1>9</h1>
+            <h1>10</h1>
+            <h1>11</h1>
+            <h1>12</h1>
+            <h1>13</h1>
+            <h1>14</h1>
+            <h1>15</h1>
+        </div>
+        <div id="textContainer">
+            <textarea id="editor" rows="20" cols="80"></textarea>
         </div>
 
         <!--Panel derecho, donde se clasifican las lineas-->
@@ -100,15 +94,15 @@
             <div class="content-container">
                 <div class="tab-content active" id="lexico">
                     <h2>Análisis Léxico</h2>
-                    <textarea class="textarea" id="lexicoContent" readonly></textarea>
+                    <textarea style="background-color: #edeedd;" class="textarea" id="lexicoContent" readonly></textarea>
                 </div>
                 <div class="tab-content" id="sintactico">
                     <h2>Análisis Sintáctico</h2>
-                    <textarea class="textarea" id="sintacticoContent" readonly></textarea>
+                    <textarea style="background-color: #edeedd;" class="textarea" id="sintacticoContent" readonly></textarea>
                 </div>
                 <div class="tab-content" id="semantico">
                     <h2>Análisis Semántico</h2>
-                    <textarea class="textarea" id="semanticoContent" readonly></textarea>
+                    <textarea style="background-color: #edeedd;" class="textarea" id="semanticoContent" readonly></textarea>
                 </div>
                 <!--Tabla donde se clasifican los hash-->
                 <div class="tab-content" id="hash-table">
@@ -124,7 +118,7 @@
                 </div>
                 <div class="tab-content" id="codigo-intermedio">
                     <h2>Código Intermedio</h2>
-                    <textarea class="textarea" id="intermedioContent" readonly></textarea>
+                    <textarea style="background-color: #edeedd;" class="textarea" id="intermedioContent" readonly></textarea>
                 </div>
             </div>
         </div>
