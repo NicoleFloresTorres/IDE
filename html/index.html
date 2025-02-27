@@ -4,15 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IDE</title>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="apartadoCodigo">
-    </div>
-    <div id="clasificacionDeLineas">
+    <!--Contenedor principal, donde se encuentran los 3 apartados-->
+    <div class="main-container">
+        <div class="apartadoCodigo" id="left-panel">
+            <h1>Este es el apartado de codigo</h1>
+        </div>
 
-    </div>
-    <div id="errores">
+        <!--Panel derecho, donde se clasifican las lineas-->
+        <div class="clasificacionDeLineas" id="right-panel">
+            <div class="tab-container">
+                <div class="tab active" data-tab="lexico">Léxico</div>
+                <div class="tab" data-tab="sintactico">Sintáctico</div>
+                <div class="tab" data-tab="semantico">Semántico</div>
+                <div class="tab" data-tab="hash-table">Hash-Table</div>
+                <div class="tab" data-tab="codigo-intermedio">Código Intermedio</div>
+            </div>
+            <!--Contenedores de cada una de las clasificaciones-->
+            <div class="content-container">
+                <div class="tab-content active" id="lexico">
+                    <h2>Análisis Léxico</h2>
+                    <textarea class="textarea" id="lexicoContent" readonly></textarea>
+                </div>
+                <div class="tab-content" id="sintactico">
+                    <h2>Análisis Sintáctico</h2>
+                    <textarea class="textarea" id="sintacticoContent" readonly></textarea>
+                </div>
+                <div class="tab-content" id="semantico">
+                    <h2>Análisis Semántico</h2>
+                    <textarea class="textarea" id="semanticoContent" readonly></textarea>
+                </div>
+                <div class="tab-content" id="hash-table">
+                    <h2>Tabla Hash</h2>
+                    <table id="hashTable">
+                        <tr>
+                            <th>Índice</th>
+                            <th>Identificador</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                        </tr>
+                    </table>
+                </div>
+                <div class="tab-content" id="codigo-intermedio">
+                    <h2>Código Intermedio</h2>
+                    <textarea class="textarea" id="intermedioContent" readonly></textarea>
+                </div>
+            </div>
+        </div>
 
+        <!--Panel inferior, donde se muestran los errores-->
+        <div class="consola" id="bottom-panel">
+            <h2>Consola</h2>
+            <textarea class="textareaconsola" id="consola" readonly></textarea>
+        </div>
     </div>
+    <script src="script.js"></script>
 </body>
 </html>
