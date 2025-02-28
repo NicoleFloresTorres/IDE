@@ -1,88 +1,244 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>IDE</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css">
+    <!-- CodeMirror CSS -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- CodeMirror JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js"></script>
     <script type="text/javascript" src="/eel.js"></script>
     <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            /* Ensure full height */
+            overflow: hidden;
+            /* Prevent scrolling */
+        }
 
+        :root {
+            --primary-purple: #6A5ACD;
+            --secondary-lilac: #E6E6FA;
+            --accent-purple: #9370DB;
+            --dark-purple: #483D8B;
+            --light-lilac: #F8F4FF;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--light-lilac);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #actionBar {
+            display: flex;
+            gap: 0.5rem;
+            padding: 8px 20px;
+            background-color: var(--primary-purple);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn {
+            background-color: var(--accent-purple);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+            padding: 6px 12px;
+            border-radius: 4px;
+        }
+
+        .btn:hover {
+            background-color: var(--dark-purple);
+            transform: translateY(-1px);
+        }
+
+        .dropdown-menu {
+            background-color: var(--light-lilac);
+            border: 1px solid var(--secondary-lilac);
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--secondary-lilac);
+        }
+
+        .main-container {
+            display: flex;
+            flex-wrap: wrap;
+            height: calc(100vh - 62px);
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        #editorApartado {
+            flex: 3;
+            min-width: 400px;
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #right-panel {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        #bottom-panel {
+            width: 100%;
+            background: white;
+            border-radius: 8px;
+            margin-top: auto;
+            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .tab-container {
+            display: flex;
+            border-bottom: 2px solid var(--secondary-lilac);
+        }
+
+        .tab {
+            padding: 12px 20px;
+            cursor: pointer;
+            background: var(--light-lilac);
+            color: var(--dark-purple);
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: var(--primary-purple);
+            color: white;
+        }
+
+        .tab:hover:not(.active) {
+            background: var(--secondary-lilac);
+        }
+
+        .content-container {
+            padding: 1rem;
+            flex-grow: 1;
+        }
+
+        .textarea {
+            width: 100%;
+            height: 300px;
+            padding: 1rem;
+            border: 1px solid var(--secondary-lilac);
+            border-radius: 6px;
+            font-family: monospace;
+            background: var(--light-lilac);
+        }
+
+        #hashTable {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        #hashTable th {
+            background: var(--primary-purple);
+            color: white;
+            padding: 8px;
+        }
+
+        #hashTable td {
+            padding: 8px;
+            border-bottom: 1px solid var(--secondary-lilac);
+        }
+
+        #hashTable tr:nth-child(even) {
+            background: var(--light-lilac);
+        }
+
+        .tab-consola {
+            padding: 10px 15px;
+            background: var(--light-lilac);
+            color: var(--dark-purple);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .tab-consola.active {
+            background: var(--primary-purple);
+            color: white;
+        }
+
+        .textareaconsola {
+            width: 100%;
+            height: 150px;
+            padding: 1rem;
+            border: 1px solid var(--secondary-lilac);
+            border-radius: 6px;
+            background: var(--light-lilac);
+        }
+
+        .btn img.imagenesActionBar {
+            width: 16px;
+            height: 16px;
+        }
     </style>
 </head>
+
 <body>
     <div id="actionBar">
         <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              File
-            </button>
+            <a class="btn btn-secondary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                aria-expanded="false">
+                File
+            </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" onclick="abrirArchivo()" id="abrir" href="#">Abrir</a></li>
-              <li><a class="dropdown-item" id="guardarDropdown" href="#">Guardar</a></li>
-              <li><a class="dropdown-item" id="guardarComoDropdown" href="#">Guardar como</a></li>
-              <li><a class="dropdown-item" id="cerrar" onclick="cerrarAplicacion()">Cerrar</a></li>
+                <li><a class="dropdown-item" href="#" id="dropdownOpen">Abrir</a></li>
+                <li><a class="dropdown-item" href="#" id="dropdownSave">Guardar</a></li>
+                <li><a class="dropdown-item" href="#" id="dropdownSaveAs">Guardar como</a></li>
+                <li><a class="dropdown-item" href="#" id="dropdownClose">Cerrar</a></li>
             </ul>
-          </div>
-          <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                Edit
-            </button>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Action</a></li>
-              <li><a class="dropdown-item" href="#">Another action</a></li>
-              <li><a class="dropdown-item" href="#">Something else here</a></li>
-            </ul>
-          </div>
-          <div class="dropdown">
-            <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Build and debug
-            </button>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Action</a></li>
-              <li><a class="dropdown-item" href="#">Another action</a></li>
-              <li><a class="dropdown-item" href="#">Something else here</a></li>
-            </ul>
-          </div>
-          <input type="file" id="fileInput" style="display: none;">
-          <button type="button" class="btn" id="botonGuardar"><img class="imagenesActionBar" src="assets/guardar.png" alt="Guardar"></button>
-          <button type="button" class="btn" id="botonAbrir" onclick="abrirArchivo()"><img class="imagenesActionBar" src="assets/abrir.png" alt="Abrir"></button>
-          <button type="button" class="btn" id="botonGuardarComo"><img class="imagenesActionBar" src="assets/guardarComo.png" alt="Guardar como"></button>
-          <button type="button" class="btn" id="botonCierre" onclick="cerrarAplicacion()">Close</button>
-          <button type="button" class="btn">Lexico</button>
-          <button type="button" class="btn">Sintactico</button>
-          <button type="button" class="btn">Semantico</button>
-          <button type="button" class="btn">Compilar</button>
+        </div>
+        <!-- Image links -->
+        <a href="#" class="btn" id="saveFileBtn">
+            <img class="imagenesActionBar" src="assets/guardar.png" alt="Guardar">
+        </a>
+        <a href="#" class="btn" id="openFileBtn">
+            <img class="imagenesActionBar" src="assets/abrir.png" alt="Abrir">
+        </a>
+        <a href="#" class="btn" id="saveAsFileBtn">
+            <img class="imagenesActionBar" src="assets/guardarComo.png" alt="Guardar como">
+        </a>
+        <a href="#" class="btn" id="closeFileBtn">Close File</a>
+        <a href="#" class="btn" id="closeAppBtn">Close App</a>
+        <!-- Additional buttons -->
+        <a href="#" class="btn">Lexico</a>
+        <a href="#" class="btn">Sintactico</a>
+        <a href="#" class="btn">Semantico</a>
+        <a href="#" class="btn">Compilar</a>
     </div>
 
 
+    <div id="numeralContainer"></div>
+    <div id="textContainer"></div>
 
     <div class="main-container">
-        <div id="numeralContainer">
-            <h1>1</h1>
-            <h1>2</h1>
-            <h1>3</h1>
-            <h1>4</h1>
-            <h1>5</h1>
-            <h1>6</h1>
-            <h1>7</h1>
-            <h1>8</h1>
-            <h1>9</h1>
-            <h1>10</h1>
-            <h1>11</h1>
-            <h1>12</h1>
-            <h1>13</h1>
-            <h1>14</h1>
-            <h1>15</h1>
-        </div>
-        <div id="textContainer">
-            <textarea id="editor" rows="20" cols="80"></textarea>
+        <div class="apartadoCodigo">
+            <h2 style="color: var(--dark-purple); margin-bottom: 1rem;">Editor de Código</h2>
+            <textarea id="codeEditor"></textarea>
         </div>
 
-        <!--Panel derecho, donde se clasifican las lineas-->
+        <!-- Panel derecho, donde se clasifican las lineas -->
         <div class="clasificacionDeLineas" id="right-panel">
-            <!--Contenedor de las pestañas (tab)-->
+            <!-- Contenedor de las pestañas (tab) -->
             <div class="tab-container">
                 <div class="tab active" data-tab="lexico">Léxico</div>
                 <div class="tab" data-tab="sintactico">Sintáctico</div>
@@ -90,21 +246,21 @@
                 <div class="tab" data-tab="hash-table">Hash-Table</div>
                 <div class="tab" data-tab="codigo-intermedio">Código Intermedio</div>
             </div>
-            <!--Contenedores de cada una de las clasificaciones-->
+            <!-- Contenedores de cada una de las clasificaciones -->
             <div class="content-container">
                 <div class="tab-content active" id="lexico">
                     <h2>Análisis Léxico</h2>
-                    <textarea style="background-color: #edeedd;" class="textarea" id="lexicoContent" readonly></textarea>
+                    <textarea class="textarea" id="lexicoContent" readonly></textarea>
                 </div>
                 <div class="tab-content" id="sintactico">
                     <h2>Análisis Sintáctico</h2>
-                    <textarea style="background-color: #edeedd;" class="textarea" id="sintacticoContent" readonly></textarea>
+                    <textarea class="textarea" id="sintacticoContent" readonly></textarea>
                 </div>
                 <div class="tab-content" id="semantico">
                     <h2>Análisis Semántico</h2>
-                    <textarea style="background-color: #edeedd;" class="textarea" id="semanticoContent" readonly></textarea>
+                    <textarea class="textarea" id="semanticoContent" readonly></textarea>
                 </div>
-                <!--Tabla donde se clasifican los hash-->
+                <!-- Tabla donde se clasifican los hash -->
                 <div class="tab-content" id="hash-table">
                     <h2>Tabla Hash</h2>
                     <table id="hashTable">
@@ -118,12 +274,12 @@
                 </div>
                 <div class="tab-content" id="codigo-intermedio">
                     <h2>Código Intermedio</h2>
-                    <textarea style="background-color: #edeedd;" class="textarea" id="intermedioContent" readonly></textarea>
+                    <textarea class="textarea" id="intermedioContent" readonly></textarea>
                 </div>
             </div>
         </div>
 
-        <!--Panel inferior, donde se muestran los errores-->
+        <!-- Panel inferior, donde se muestran los errores -->
         <div class="consola" id="bottom-panel">
             <div class="tab-container">
                 <div class="tab-consola active" data-tab="consola-erroreslex">Errores Léxicos</div>
@@ -131,7 +287,7 @@
                 <div class="tab-consola" data-tab="consola-erroressem">Errores Semánticos</div>
                 <div class="tab-consola" data-tab="consola-resultados">Resultados</div>
             </div>
-            <!--Contenedor de los contenidos de los errores-->
+            <!-- Contenedor de los contenidos de los errores -->
             <div class="content-container">
                 <div class="tab-content-consola active" id="errores-lexicos">
                     <h2>Errores Léxicos</h2>
@@ -154,4 +310,5 @@
     </div>
     <script src="script.js"></script>
 </body>
+
 </html>

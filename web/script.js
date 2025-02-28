@@ -1,24 +1,32 @@
-// Manejo de pestañas de la parte superior derecha
+//Manejo de pestañas de la parte superior derecha
+//Seleccionar todas las pestañas y agregar un evento de click
 document.querySelectorAll('.tab').forEach(tab => {
-    tab.addEventListener('click', function() {
+    //Por cada tab, hay un metodo de click y por cada click se ejecuta una funcion
+    tab.addEventListener('click', function () {
+        //Remover la clase active de todas las pestañas
         document.querySelectorAll('.tab').forEach(t => {
             t.classList.remove('active');
         });
+        //Agregar la clase active a la pestaña seleccionada
         this.classList.add('active');
 
+        //Remover la clase active de todos los contenidos
         document.querySelectorAll('.tab-content').forEach(content => {
             content.classList.remove('active');
         });
 
+        //Obtener el id de la pestaña seleccionada
         const tabId = this.getAttribute('data-tab');
+        //Agregar la clase active al contenido correspondiente
         document.getElementById(tabId).classList.add('active');
+        //Llamar a la funcion tab_changed de eel
         eel.tab_changed(tabId);
     });
 });
 
-// Manejo de pestañas de la parte inferior, la consola
+//Manejo de pestañas de la parte inferior, la consola
 document.querySelectorAll('.tab-consola').forEach(tab => {
-    tab.addEventListener('click', function() {
+    tab.addEventListener('click', function () {
         document.querySelectorAll('.tab-consola').forEach(t => {
             t.classList.remove('active');
         });
@@ -34,9 +42,11 @@ document.querySelectorAll('.tab-consola').forEach(tab => {
     });
 });
 
-// Funciones expuestas para Eel
+//Metodo de eel para llamar la funcion dentro del parentesis desde Python
 eel.expose(actualizarLexicoContent);
+//Funcion para actualizar el contenido del textarea de lexico
 function actualizarLexicoContent(content) {
+    //Obtener el elemento con el id lexicoContent y asignarle el contenido
     document.getElementById('lexicoContent').value = content;
 }
 
@@ -50,12 +60,18 @@ function actualizarSemanticoContent(content) {
     document.getElementById('semanticoContent').value = content;
 }
 
+//Mismo metodo, solo que para una tabla
 eel.expose(actualizarHashTable);
 function actualizarHashTable(data) {
+    //Obtener la tabla con el id hashTable
     const table = document.getElementById('hashTable');
+    //Eliminar todas las filas de la tabla
     while (table.rows.length > 1) {
+        //Eliminar la fila 1, ya que la 0 es el header
         table.deleteRow(1);
     }
+
+    //Por cada item en data, agregar una fila a la tabla
     data.forEach(item => {
         const row = table.insertRow();
         row.insertCell(0).textContent = item.index;
@@ -82,104 +98,101 @@ function limpiarConsola() {
     document.getElementById('consola').value = '';
 }
 
-let archivoActual = null;
+document.addEventListener("DOMContentLoaded", function () {
+    // Initialize CodeMirror inside the textContainer div
+    const editor = CodeMirror.fromTextArea(document.getElementById("codeEditor"), {
+        lineNumbers: true,
+        mode: "python",
+        theme: "default",
+        value: "" // initial empty content
+    });
 
-function abrirArchivo() {
-    let input = document.getElementById("fileInput");
-    input.click();
+    var statusBar = document.createElement("div");
+    statusBar.id = "statusBar";
+    statusBar.style.padding = "8px";
+    statusBar.style.background = "var(--primary-purple)";
+    statusBar.style.color = "white";
+    statusBar.style.fontSize = "14px";
+    statusBar.style.textAlign = "right";
 
-    input.onchange = function() {
-        if (input.files.length > 0) {
-            let archivo = input.files[0];
-            let reader = new FileReader();
+    // Append it to the bottom panel
+    document.getElementById("bottom-panel").appendChild(statusBar);
 
-            reader.onload = function(event) {
-                document.getElementById("editor").value = event.target.result;
-                archivoActual = archivo;
-            };
+    // Function to update cursor position
+    function updateCursorPosition() {
+        var cursor = editor.getCursor();
+        statusBar.textContent = `Linea: ${cursor.line + 1}, Columna: ${cursor.ch + 1}`;
+    }
 
-            reader.readAsText(archivo);
+    // Listen for cursor movement
+    editor.on("cursorActivity", updateCursorPosition);
+
+    // Set initial position
+    updateCursorPosition();
+
+    // Function to open a file
+    async function openFile(event) {
+        event.preventDefault();
+        try {
+            // Call the Python function exposed via eel
+            const fileContent = await eel.open_file()();
+            editor.setValue(fileContent);
+        } catch (error) {
+            console.error("Error calling eel.open_file:", error);
         }
-    };
-}
-
-// 🔹 GUARDAR ARCHIVO (SOBREESCRIBIR)
-document.getElementById("botonGuardar").addEventListener("click", function() {
-    if (archivoActual) {
-        let contenido = document.getElementById("editor").value;
-        let blob = new Blob([contenido], { type: "text/plain" });
-
-        let enlace = document.createElement("a");
-        enlace.href = URL.createObjectURL(blob);
-        enlace.download = archivoActual.name;
-        enlace.click();
-    } else {
-        guardarComo();
-    }
-});
-
-// 🔹 GUARDAR COMO (NUEVO ARCHIVO)
-document.getElementById("botonGuardarComo").addEventListener("click", function() {
-    guardarComo();
-});
-
-function guardarComo() {
-    let contenido = document.getElementById("editor").value;
-    let nombreArchivo = prompt("Ingrese el nombre del archivo:", "nuevo_archivo.txt");
-
-    if (nombreArchivo) {
-        let blob = new Blob([contenido], { type: "text/plain" });
-        let enlace = document.createElement("a");
-        enlace.href = URL.createObjectURL(blob);
-        enlace.download = nombreArchivo;
-        enlace.click();
-    }
-}
-
-function cerrarAplicacion() {
-    window.close();
-}
-
-document.getElementById('guardarDropdown').addEventListener('click', function() {
-    document.getElementById('botonGuardar').click();
-});
-
-document.getElementById('guardarComoDropdown').addEventListener('click', function() {
-    document.getElementById('botonGuardarComo').click();
-});
-
-const editor = document.getElementById('editor');
-const numeralContainer = document.getElementById('numeralContainer');
-const textContainer = document.getElementById('textContainer');
-
-function actualizarNumerosDeLinea() {
-    const numeroDeLineas = editor.value.split('\n').length;
-
-    let contenidoNumeros = '';
-    for (let i = 1; i <= numeroDeLineas; i++) {
-        contenidoNumeros += `<div>${i}</div>`;
     }
 
-    numeralContainer.innerHTML = contenidoNumeros;
+    // Function to save the current file
+    async function saveFile(event) {
+        event.preventDefault();
+        try {
+            const content = editor.getValue();
+            const response = await eel.save_file(content)();
+            console.log(response);
+        } catch (error) {
+            console.error("Error calling eel.save_file:", error);
+        }
+    }
 
-    numeralContainer.scrollTop = editor.scrollTop;
-}
+    // Function to "Save As" the current file
+    async function saveFileAs(event) {
+        event.preventDefault();
+        event.stopPropagation();
+        try {
+            const content = editor.getValue();
+            const response = await eel.save_file_as(content)();
+            console.log(response);
+        } catch (error) {
+            console.error("Error calling eel.save_file_as:", error);
+        }
+    }
 
-function sincronizarAltura() {
-    numeralContainer.style.height = `${editor.clientHeight}px`;
-}
+    document.getElementById("closeFileBtn").addEventListener("click", function () {
+        console.log("File close requested");
+        // Implement logic to close the file (e.g., clearing editor content)
+        document.getElementById("codeEditor").value = "";  // Example: Clear editor
+    });
 
-editor.addEventListener('input', () => {
-    actualizarNumerosDeLinea();
-    sincronizarAltura();
+    document.getElementById("closeAppBtn").addEventListener("click", function () {
+        eel.close_app();  // Call Python function to close the application
+        window.close();
+    });
+
+    // Bind event listeners to both the dropdown menu items and the image buttons
+    document.getElementById("dropdownOpen").addEventListener("click", openFile);
+    document.getElementById("dropdownSave").addEventListener("click", saveFile);
+    document.getElementById("dropdownSaveAs").addEventListener("click", saveFileAs);
+
+    document.getElementById("openFileBtn").addEventListener("click", openFile);
+    document.getElementById("saveFileBtn").addEventListener("click", saveFile);
+    document.getElementById("saveAsFileBtn").addEventListener("click", saveFileAs);
+
+
+    document.getElementById('actionBar').addEventListener('click', function (event) {
+        let btn = event.target.closest('.btn'); // Get the closest button (if any)
+        if (!btn) return; // Ignore clicks outside buttons
+    
+        event.preventDefault(); // Prevent default action (if needed)
+        console.log('Button clicked:', btn.id);
+    });    
 });
-
-// Evento para sincronizar el scroll del editor con el numeralContainer
-editor.addEventListener('scroll', () => {
-    numeralContainer.scrollTop = editor.scrollTop;
-});
-
-window.addEventListener('resize', sincronizarAltura);
-
-actualizarNumerosDeLinea();
-sincronizarAltura();
