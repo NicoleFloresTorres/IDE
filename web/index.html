@@ -13,184 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- CodeMirror JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/python/python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/clike/clike.min.js"></script>
     <script type="text/javascript" src="/eel.js"></script>
-    <style>
-        html,
-        body {
-            margin: 0;
-            padding: 0;
-            height: 100vh;
-            /* Ensure full height */
-            overflow: hidden;
-            /* Prevent scrolling */
-        }
-
-        :root {
-            --primary-purple: #6A5ACD;
-            --secondary-lilac: #E6E6FA;
-            --accent-purple: #9370DB;
-            --dark-purple: #483D8B;
-            --light-lilac: #F8F4FF;
-        }
-
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: var(--light-lilac);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        #actionBar {
-            display: flex;
-            gap: 0.5rem;
-            padding: 8px 20px;
-            background-color: var(--primary-purple);
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .btn {
-            background-color: var(--accent-purple);
-            color: white;
-            border: none;
-            transition: all 0.3s ease;
-            padding: 6px 12px;
-            border-radius: 4px;
-        }
-
-        .btn:hover {
-            background-color: var(--dark-purple);
-            transform: translateY(-1px);
-        }
-
-        .dropdown-menu {
-            background-color: var(--light-lilac);
-            border: 1px solid var(--secondary-lilac);
-        }
-
-        .dropdown-item:hover {
-            background-color: var(--secondary-lilac);
-        }
-
-        .main-container {
-            display: flex;
-            flex-wrap: wrap;
-            height: calc(100vh - 62px);
-            gap: 1rem;
-            padding: 1rem;
-        }
-
-        #editorApartado {
-            flex: 3;
-            min-width: 400px;
-            background: white;
-            border-radius: 8px;
-            padding: 1rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        #right-panel {
-            flex: 1;
-            min-width: 300px;
-            background: white;
-            border-radius: 8px;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        #bottom-panel {
-            width: 100%;
-            background: white;
-            border-radius: 8px;
-            margin-top: auto;
-            box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
-        }
-
-        .tab-container {
-            display: flex;
-            border-bottom: 2px solid var(--secondary-lilac);
-        }
-
-        .tab {
-            padding: 12px 20px;
-            cursor: pointer;
-            background: var(--light-lilac);
-            color: var(--dark-purple);
-            transition: all 0.3s ease;
-        }
-
-        .tab.active {
-            background: var(--primary-purple);
-            color: white;
-        }
-
-        .tab:hover:not(.active) {
-            background: var(--secondary-lilac);
-        }
-
-        .content-container {
-            padding: 1rem;
-            flex-grow: 1;
-        }
-
-        .textarea {
-            width: 100%;
-            height: 300px;
-            padding: 1rem;
-            border: 1px solid var(--secondary-lilac);
-            border-radius: 6px;
-            font-family: monospace;
-            background: var(--light-lilac);
-        }
-
-        #hashTable {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        #hashTable th {
-            background: var(--primary-purple);
-            color: white;
-            padding: 8px;
-        }
-
-        #hashTable td {
-            padding: 8px;
-            border-bottom: 1px solid var(--secondary-lilac);
-        }
-
-        #hashTable tr:nth-child(even) {
-            background: var(--light-lilac);
-        }
-
-        .tab-consola {
-            padding: 10px 15px;
-            background: var(--light-lilac);
-            color: var(--dark-purple);
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .tab-consola.active {
-            background: var(--primary-purple);
-            color: white;
-        }
-
-        .textareaconsola {
-            width: 100%;
-            height: 150px;
-            padding: 1rem;
-            border: 1px solid var(--secondary-lilac);
-            border-radius: 6px;
-            background: var(--light-lilac);
-        }
-
-        .btn img.imagenesActionBar {
-            width: 16px;
-            height: 16px;
-        }
-    </style>
 </head>
 
 <body>
@@ -220,7 +44,7 @@
         <a href="#" class="btn" id="closeFileBtn">Close File</a>
         <a href="#" class="btn" id="closeAppBtn">Close App</a>
         <!-- Additional buttons -->
-        <a href="#" class="btn">Lexico</a>
+        <a href="#" class="btn" id="lexicoBtn">Lexico</a>
         <a href="#" class="btn">Sintactico</a>
         <a href="#" class="btn">Semantico</a>
         <a href="#" class="btn">Compilar</a>
@@ -289,21 +113,21 @@
             </div>
             <!-- Contenedor de los contenidos de los errores -->
             <div class="content-container">
-                <div class="tab-content-consola active" id="errores-lexicos">
+                <div class="tab-content-consola active" id="erroreslex">
                     <h2>Errores Léxicos</h2>
-                    <textarea class="textareaconsola" id="erroreslexContent" readonly></textarea>
+                    <textarea class="textareaconsola" id="erroreslexContent"></textarea>
                 </div>
-                <div class="tab-content-consola" id="errores-sintacticos">
+                <div class="tab-content-consola" id="erroressin">
                     <h2>Errores Sintácticos</h2>
                     <textarea class="textareaconsola" id="erroressinContent" readonly></textarea>
                 </div>
-                <div class="tab-content-consola" id="errores-semanticos">
+                <div class="tab-content-consola" id="erroressem">
                     <h2>Errores Semánticos</h2>
                     <textarea class="textareaconsola" id="erroressemContent" readonly></textarea>
                 </div>
                 <div class="tab-content-consola" id="resultados">
                     <h2>Resultados</h2>
-                    <textarea class="textareaconsola" id="resultados" readonly></textarea>
+                    <textarea class="textareaconsola" id="resultadosContent" readonly></textarea>
                 </div>
             </div>
         </div>
