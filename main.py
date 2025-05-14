@@ -31,32 +31,34 @@ SYMBOLS = {
 # Valid number pattern: integers, floats, scientific notation
 FLOAT_PATTERN = r"\b\d+\.\d+\b"  # Solo números con un punto
 INTEGER_PATTERN = r"\b\d+\b"  # Enteros
+INVALID_FLOAT_PATTERN = r"\b\d+\.(?!\d)\b"  # Números con punto final sin dígitos
 
 
-# Patterns for invalid number formats:
-INVALID_NUMBER_PATTERNS = [
-    # Multiple dots (2 or more) in the number
-    r"\b\d+(?:\.\d+){2,}\b",
-    # Trailing dot without digits (e.g., '34.' or '34.+')
-    r"\b\d+\.(?!\d)"
-]
 
 TOKEN_SPEC = [
     # Comentarios primero
     ("SINGLE_LINE_COMMENT", r"//.*?$"),
     ("MULTI_LINE_COMMENT", r"/\*[\s\S]*?\*/"),
     ("UNCLOSED_MULTI_LINE_COMMENT", r"/\*[\s\S]*?$"),
+    
+    # Números inválidos (punto final primero para prioridad)
+    ("INVALID_FLOAT", INVALID_FLOAT_PATTERN),
+    
     # Números válidos
     ("FLOAT", FLOAT_PATTERN),
     ("INTEGER", INTEGER_PATTERN),
+    
+    # Resto de los tokens...
     ("ID", r"\b[a-zA-Z_]\w*\b"),
     ("STRING", r'"([^"\\]|\\.)*"'),
     ("CHAR", r"'([^'\\]|\\.)'"),
     ("OP", r"|".join(re.escape(op) for op in sorted(OPERATORS, key=len, reverse=True))),
     ("SYMBOL", r"|".join(re.escape(sym) for sym in SYMBOLS)),
     ("WHITESPACE", r"[ \t\n]+"),
+    
     # Punto solitario (para capturar puntos adicionales en números)
     ("DOT", r"\."),
+    
     # Cualquier otro carácter inesperado
     ("MISMATCH", r"\S")
 ]
@@ -159,14 +161,24 @@ def lex(code):
             })
             continue
             
-        # Manejar puntos adicionales en números
+        # Manejar números con punto final (como "34.")
+        if kind == "INVALID_FLOAT":
+            errors.append({
+                "error_message": f"Invalid number format: {value} (missing decimal digits)",
+                "line": line_num,
+                "column": col_num
+            })
+            continue
+            
+        # Manejar puntos adicionales en números (como "34.34.34")
         if kind == "DOT":
             # Verificar si el punto está entre dígitos (parte de un número inválido)
             prev_char = code[start-1] if start > 0 else ''
             next_char = code[start+1] if start+1 < len(code) else ''
+            
             if prev_char.isdigit() and next_char.isdigit():
                 errors.append({
-                    "error_message": "Invalid point in number",
+                    "error_message": "Invalid additional decimal point in number : {}".format(value),
                     "line": line_num,
                     "column": col_num
                 })
