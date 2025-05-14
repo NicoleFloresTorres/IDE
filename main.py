@@ -29,10 +29,8 @@ SYMBOLS = {
 }
 
 # Valid number pattern: integers, floats, scientific notation
-NUMBER_PATTERN = r"\b\d+(?:\.\d+)?(?:[eE][-+]?\d+)?\b"
-
-INTEGER_PATTERN = r"\b\d+\b"
-FLOAT_PATTERN = r"\b(?:\d+\.\d+|\.\d+)\b"
+FLOAT_PATTERN = r"\b\d+\.\d+\b"  # Solo números con un punto
+INTEGER_PATTERN = r"\b\d+\b"  # Enteros
 
 
 # Patterns for invalid number formats:
@@ -44,12 +42,11 @@ INVALID_NUMBER_PATTERNS = [
 ]
 
 TOKEN_SPEC = [
-    # Put comments first to ensure they take precedence over operators
+    # Comentarios primero
     ("SINGLE_LINE_COMMENT", r"//.*?$"),
     ("MULTI_LINE_COMMENT", r"/\*[\s\S]*?\*/"),
     ("UNCLOSED_MULTI_LINE_COMMENT", r"/\*[\s\S]*?$"),
-    ("INVALID_NUMBER_MULTI", INVALID_NUMBER_PATTERNS[0]),
-    ("INVALID_NUMBER_TRAILING", INVALID_NUMBER_PATTERNS[1]),
+    # Números válidos
     ("FLOAT", FLOAT_PATTERN),
     ("INTEGER", INTEGER_PATTERN),
     ("ID", r"\b[a-zA-Z_]\w*\b"),
@@ -58,7 +55,9 @@ TOKEN_SPEC = [
     ("OP", r"|".join(re.escape(op) for op in sorted(OPERATORS, key=len, reverse=True))),
     ("SYMBOL", r"|".join(re.escape(sym) for sym in SYMBOLS)),
     ("WHITESPACE", r"[ \t\n]+"),
-    # Catch any other unexpected characters
+    # Punto solitario (para capturar puntos adicionales en números)
+    ("DOT", r"\."),
+    # Cualquier otro carácter inesperado
     ("MISMATCH", r"\S")
 ]
 
@@ -145,6 +144,7 @@ def lex(code):
         line_num = code.count("\n", 0, start) + 1
         line_start = code.rfind("\n", 0, start) + 1
         col_num = start - line_start + 1
+        
         if kind == "WHITESPACE":
             continue
         if kind in ("SINGLE_LINE_COMMENT", "MULTI_LINE_COMMENT"):
@@ -158,20 +158,23 @@ def lex(code):
                 "column": col_num
             })
             continue
-        if kind in ("INVALID_NUMBER_MULTI", "INVALID_NUMBER_TRAILING"):
-            errors.append({
-                "error_message": f"Invalid number format: {value}",
-                "line": line_num,
-                "column": col_num
-            })
-            continue
-        if kind in ("FLOAT", "INTEGER") and not validate_number(value):
-            errors.append({
-                "error_message": f"Invalid {kind.lower()} format: {value}",
-                "line": line_num,
-                "column": col_num
-            })
-            continue
+            
+        # Manejar puntos adicionales en números
+        if kind == "DOT":
+            # Verificar si el punto está entre dígitos (parte de un número inválido)
+            prev_char = code[start-1] if start > 0 else ''
+            next_char = code[start+1] if start+1 < len(code) else ''
+            if prev_char.isdigit() and next_char.isdigit():
+                errors.append({
+                    "error_message": "Invalid point in number",
+                    "line": line_num,
+                    "column": col_num
+                })
+                continue
+            else:
+                # Si no está entre dígitos, es un operador o símbolo
+                kind = "SYMBOL"
+                
         if kind == "MISMATCH":
             errors.append({
                 "error_message": f"Unexpected character: {value}",
@@ -179,12 +182,14 @@ def lex(code):
                 "column": col_num
             })
             continue
+            
         tokens.append({
             "token_type": kind,
             "lexeme": value,
             "line": line_num,
             "column": col_num
         })
+    
     return tokens, errors
 
 if __name__ == "__main__":
