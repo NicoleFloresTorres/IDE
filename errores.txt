@@ -1,0 +1,3 @@
+Error: Unexpected character: @ Linea:1 Col:9
+Error: Invalid number format: 32. (missing decimal digits) Linea:1 Col:25
+Error: Invalid additional decimal point in number : . Linea:2 Col:6

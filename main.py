@@ -4,6 +4,7 @@ from tkinter import filedialog
 import sys
 import re
 import json
+import os
 
 # Initialize eel and point it to your web folder
 eel.init('web')
@@ -28,12 +29,10 @@ SYMBOLS = {
     "(", ")", "{", "}", "[", "]", ";", ",", ":", "?"
 }
 
-# Valid number pattern: integers, floats, scientific notation
+# Valid number pattern: integers, floats
 FLOAT_PATTERN = r"\b\d+\.\d+\b"  # Solo números con un punto
 INTEGER_PATTERN = r"\b\d+\b"  # Enteros
 INVALID_FLOAT_PATTERN = r"\b\d+\.(?!\d)\b"  # Números con punto final sin dígitos
-
-
 
 TOKEN_SPEC = [
     # Comentarios primero
@@ -67,15 +66,6 @@ TOK_REGEX = re.compile(
     "|".join(f"(?P<{name}>{pattern})" for name, pattern in TOKEN_SPEC),
     re.DOTALL | re.MULTILINE
 )
-
-def validate_number(value):
-    if value.count('.') > 1:
-        return False
-    if '.' in value:
-        integer_part, fractional_part = value.split('.', 1)
-        if not fractional_part.isdigit():
-            return False
-    return True
 
 @eel.expose
 def open_file():
@@ -147,9 +137,7 @@ def lex(code):
         line_start = code.rfind("\n", 0, start) + 1
         col_num = start - line_start + 1
         
-        if kind == "WHITESPACE":
-            continue
-        if kind in ("SINGLE_LINE_COMMENT", "MULTI_LINE_COMMENT"):
+        if kind in ("SINGLE_LINE_COMMENT", "MULTI_LINE_COMMENT", "WHITESPACE"):
             continue
         if kind == "ID" and value in KEYWORDS:
             kind = "KEYWORD"
@@ -160,8 +148,6 @@ def lex(code):
                 "column": col_num
             })
             continue
-            
-        # Manejar números con punto final (como "34.")
         if kind == "INVALID_FLOAT":
             errors.append({
                 "error_message": f"Invalid number format: {value} (missing decimal digits)",
@@ -169,13 +155,9 @@ def lex(code):
                 "column": col_num
             })
             continue
-            
-        # Manejar puntos adicionales en números (como "34.34.34")
         if kind == "DOT":
-            # Verificar si el punto está entre dígitos (parte de un número inválido)
             prev_char = code[start-1] if start > 0 else ''
             next_char = code[start+1] if start+1 < len(code) else ''
-            
             if prev_char.isdigit() and next_char.isdigit():
                 errors.append({
                     "error_message": "Invalid additional decimal point in number : {}".format(value),
@@ -184,9 +166,7 @@ def lex(code):
                 })
                 continue
             else:
-                # Si no está entre dígitos, es un operador o símbolo
                 kind = "SYMBOL"
-                
         if kind == "MISMATCH":
             errors.append({
                 "error_message": f"Unexpected character: {value}",
@@ -194,14 +174,21 @@ def lex(code):
                 "column": col_num
             })
             continue
-            
         tokens.append({
             "token_type": kind,
             "lexeme": value,
             "line": line_num,
             "column": col_num
         })
-    
+
+    with open("tokens.txt", "w", encoding="utf-8") as token_file:
+        for token in tokens:
+            token_file.write(f"{token['token_type']} {token['lexeme']} Linea:{token['line']} Col:{token['column']}\n")
+
+    with open("errores.txt", "w", encoding="utf-8") as error_file:
+        for error in errors:
+            error_file.write(f"Error: {error['error_message']} Linea:{error['line']} Col:{error['column']}\n")
+
     return tokens, errors
 
 if __name__ == "__main__":
