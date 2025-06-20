@@ -128,14 +128,12 @@ INTEGER 2 Linea:19 Col:15
 OP && Linea:19 Col:17
 ID true Linea:19 Col:20
 SYMBOL ) Linea:19 Col:24
-SYMBOL { Linea:19 Col:26
 ID b Linea:20 Col:13
 OP = Linea:20 Col:15
 FLOAT 3.2 Linea:20 Col:17
 SYMBOL ; Linea:20 Col:20
-SYMBOL } Linea:21 Col:9
-KEYWORD else Linea:21 Col:11
-SYMBOL { Linea:21 Col:16
+KEYWORD else Linea:21 Col:9
+SYMBOL { Linea:21 Col:14
 ID b Linea:22 Col:13
 OP = Linea:22 Col:15
 FLOAT 5.0 Linea:22 Col:17

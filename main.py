@@ -569,10 +569,9 @@ class Parser:
                 "type": "expression_statement",
                 "expression": None
             }
-        
-        # Handle postfix increment/decrement specially
+
+        # Handle postfix operators
         if self.current_token and self.current_token['token_type'] == 'ID':
-            # Look ahead for postfix operators
             if self.lookahead(1, 'OP', '++') or self.lookahead(1, 'OP', '--'):
                 name = self.current_token['lexeme']
                 self.advance()
@@ -587,21 +586,23 @@ class Parser:
                         "operand": {"type": "identifier", "name": name}
                     }
                 }
-        
+
         expr = self.parse_expression()
         
-        
-        print("Current token is ", self.current_token)
-        # Be more lenient with semicolons
+        # Fix: Advance if we have an empty expression
+        if expr is None:
+            if self.current_token and self.is_expression_terminator():
+                self.advance()  # Skip terminator token
+
+        # Handle semicolon
         if self.current_token and self.current_token['token_type'] == 'SYMBOL' and self.current_token['lexeme'] == ';':
             self.advance()
         else:
-            # Only report missing semicolon if we're not at end of block or file
             if self.current_token and not self.is_statement_terminator():
                 self.add_error("Expected ';' after expression")
                 if not self.in_panic_mode:
                     self.advance()
-        
+
         return {
             "type": "expression_statement",
             "expression": expr

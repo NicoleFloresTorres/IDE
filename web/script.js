@@ -77,8 +77,7 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const syntaxAnalysis = await eel.parse_code(code)();
 
-            
-
+        
             console.log("Análisis sintáctico:", syntaxAnalysis);
             displaySyntaxErrors(syntaxAnalysis.errors);
         } catch (error) {

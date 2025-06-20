@@ -1,4 +1,786 @@
 {
   "type": "program",
-  "body": []
+  "body": [
+    {
+      "type": "starting_point",
+      "body": [
+        {
+          "type": "declaration",
+          "data_type": "int",
+          "declarations": [
+            {
+              "name": "x",
+              "array_size": null,
+              "initializer": null
+            },
+            {
+              "name": "y",
+              "array_size": null,
+              "initializer": null
+            },
+            {
+              "name": "z",
+              "array_size": null,
+              "initializer": null
+            }
+          ]
+        },
+        {
+          "type": "declaration",
+          "data_type": "float",
+          "declarations": [
+            {
+              "name": "a",
+              "array_size": null,
+              "initializer": null
+            },
+            {
+              "name": "b",
+              "array_size": null,
+              "initializer": null
+            },
+            {
+              "name": "c",
+              "array_size": null,
+              "initializer": null
+            }
+          ]
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "suma"
+            },
+            "right": {
+              "type": "integer_literal",
+              "value": 45
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "x"
+            },
+            "right": {
+              "type": "float_literal",
+              "value": 32.32
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "x"
+            },
+            "right": {
+              "type": "integer_literal",
+              "value": 23
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "y"
+            },
+            "right": {
+              "type": "binary_expression",
+              "operator": "-",
+              "left": {
+                "type": "binary_expression",
+                "operator": "+",
+                "left": {
+                  "type": "integer_literal",
+                  "value": 2
+                },
+                "right": {
+                  "type": "integer_literal",
+                  "value": 3
+                }
+              },
+              "right": {
+                "type": "integer_literal",
+                "value": 1
+              }
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "z"
+            },
+            "right": {
+              "type": "binary_expression",
+              "operator": "+",
+              "left": {
+                "type": "identifier",
+                "name": "y"
+              },
+              "right": {
+                "type": "integer_literal",
+                "value": 7
+              }
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "y"
+            },
+            "right": {
+              "type": "binary_expression",
+              "operator": "+",
+              "left": {
+                "type": "identifier",
+                "name": "y"
+              },
+              "right": {
+                "type": "integer_literal",
+                "value": 1
+              }
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "a"
+            },
+            "right": {
+              "type": "binary_expression",
+              "operator": "-",
+              "left": {
+                "type": "binary_expression",
+                "operator": "+",
+                "left": {
+                  "type": "binary_expression",
+                  "operator": "-",
+                  "left": {
+                    "type": "binary_expression",
+                    "operator": "+",
+                    "left": {
+                      "type": "float_literal",
+                      "value": 24.0
+                    },
+                    "right": {
+                      "type": "integer_literal",
+                      "value": 4
+                    }
+                  },
+                  "right": {
+                    "type": "binary_expression",
+                    "operator": "*",
+                    "left": {
+                      "type": "binary_expression",
+                      "operator": "/",
+                      "left": {
+                        "type": "integer_literal",
+                        "value": 1
+                      },
+                      "right": {
+                        "type": "integer_literal",
+                        "value": 3
+                      }
+                    },
+                    "right": {
+                      "type": "integer_literal",
+                      "value": 2
+                    }
+                  }
+                },
+                "right": {
+                  "type": "integer_literal",
+                  "value": 34
+                }
+              },
+              "right": {
+                "type": "integer_literal",
+                "value": 1
+              }
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "x"
+            },
+            "right": {
+              "type": "binary_expression",
+              "operator": "*",
+              "left": {
+                "type": "binary_expression",
+                "operator": "-",
+                "left": {
+                  "type": "integer_literal",
+                  "value": 5
+                },
+                "right": {
+                  "type": "integer_literal",
+                  "value": 3
+                }
+              },
+              "right": {
+                "type": "binary_expression",
+                "operator": "/",
+                "left": {
+                  "type": "integer_literal",
+                  "value": 8
+                },
+                "right": {
+                  "type": "integer_literal",
+                  "value": 2
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "y"
+            },
+            "right": {
+              "type": "binary_expression",
+              "operator": "-",
+              "left": {
+                "type": "binary_expression",
+                "operator": "-",
+                "left": {
+                  "type": "binary_expression",
+                  "operator": "+",
+                  "left": {
+                    "type": "integer_literal",
+                    "value": 5
+                  },
+                  "right": {
+                    "type": "integer_literal",
+                    "value": 3
+                  }
+                },
+                "right": {
+                  "type": "binary_expression",
+                  "operator": "/",
+                  "left": {
+                    "type": "binary_expression",
+                    "operator": "*",
+                    "left": {
+                      "type": "integer_literal",
+                      "value": 2
+                    },
+                    "right": {
+                      "type": "integer_literal",
+                      "value": 4
+                    }
+                  },
+                  "right": {
+                    "type": "integer_literal",
+                    "value": 7
+                  }
+                }
+              },
+              "right": {
+                "type": "integer_literal",
+                "value": 9
+              }
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "z"
+            },
+            "right": {
+              "type": "binary_expression",
+              "operator": "+",
+              "left": {
+                "type": "binary_expression",
+                "operator": "/",
+                "left": {
+                  "type": "integer_literal",
+                  "value": 8
+                },
+                "right": {
+                  "type": "integer_literal",
+                  "value": 2
+                }
+              },
+              "right": {
+                "type": "binary_expression",
+                "operator": "*",
+                "left": {
+                  "type": "integer_literal",
+                  "value": 15
+                },
+                "right": {
+                  "type": "integer_literal",
+                  "value": 4
+                }
+              }
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "y"
+            },
+            "right": {
+              "type": "float_literal",
+              "value": 14.54
+            }
+          }
+        },
+        {
+          "type": "if_statement",
+          "condition": {
+            "type": "binary_expression",
+            "operator": ">",
+            "left": {
+              "type": "integer_literal",
+              "value": 2
+            },
+            "right": {
+              "type": "integer_literal",
+              "value": 3
+            }
+          },
+          "then_branch": {
+            "type": "compound_statement",
+            "body": [
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "assignment_expression",
+                  "operator": "=",
+                  "left": {
+                    "type": "identifier",
+                    "name": "y"
+                  },
+                  "right": {
+                    "type": "binary_expression",
+                    "operator": "+",
+                    "left": {
+                      "type": "identifier",
+                      "name": "a"
+                    },
+                    "right": {
+                      "type": "integer_literal",
+                      "value": 3
+                    }
+                  }
+                }
+              }
+            ]
+          },
+          "else_branch": {
+            "type": "compound_statement",
+            "body": [
+              {
+                "type": "if_statement",
+                "condition": {
+                  "type": "binary_expression",
+                  "operator": ">",
+                  "left": {
+                    "type": "integer_literal",
+                    "value": 4
+                  },
+                  "right": {
+                    "type": "integer_literal",
+                    "value": 2
+                  }
+                },
+                "then_branch": {
+                  "type": "expression_statement",
+                  "expression": {
+                    "type": "error"
+                  }
+                },
+                "else_branch": null
+              },
+              {
+                "type": "expression_statement",
+                "expression": null
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "assignment_expression",
+                  "operator": "=",
+                  "left": {
+                    "type": "identifier",
+                    "name": "b"
+                  },
+                  "right": {
+                    "type": "float_literal",
+                    "value": 3.2
+                  }
+                }
+              },
+              {
+                "type": "compound_statement",
+                "body": [
+                  {
+                    "type": "expression_statement",
+                    "expression": {
+                      "type": "assignment_expression",
+                      "operator": "=",
+                      "left": {
+                        "type": "identifier",
+                        "name": "b"
+                      },
+                      "right": {
+                        "type": "float_literal",
+                        "value": 5.0
+                      }
+                    }
+                  }
+                ]
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "assignment_expression",
+                  "operator": "=",
+                  "left": {
+                    "type": "identifier",
+                    "name": "y"
+                  },
+                  "right": {
+                    "type": "binary_expression",
+                    "operator": "+",
+                    "left": {
+                      "type": "identifier",
+                      "name": "y"
+                    },
+                    "right": {
+                      "type": "integer_literal",
+                      "value": 1
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "postfix_expression",
+            "operator": "++",
+            "operand": {
+              "type": "identifier",
+              "name": "a"
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "postfix_expression",
+            "operator": "--",
+            "operand": {
+              "type": "identifier",
+              "name": "c"
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "x"
+            },
+            "right": {
+              "type": "binary_expression",
+              "operator": "+",
+              "left": {
+                "type": "integer_literal",
+                "value": 3
+              },
+              "right": {
+                "type": "integer_literal",
+                "value": 4
+              }
+            }
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "assignment_expression",
+            "operator": "=",
+            "left": {
+              "type": "identifier",
+              "name": "y"
+            },
+            "right": {
+              "type": "binary_expression",
+              "operator": "+",
+              "left": {
+                "type": "binary_expression",
+                "operator": "*",
+                "left": {
+                  "type": "binary_expression",
+                  "operator": "+",
+                  "left": {
+                    "type": "identifier",
+                    "name": "y"
+                  },
+                  "right": {
+                    "type": "integer_literal",
+                    "value": 1
+                  }
+                },
+                "right": {
+                  "type": "integer_literal",
+                  "value": 2
+                }
+              },
+              "right": {
+                "type": "integer_literal",
+                "value": 1
+              }
+            }
+          }
+        },
+        {
+          "type": "while_statement",
+          "condition": {
+            "type": "binary_expression",
+            "operator": ">",
+            "left": {
+              "type": "identifier",
+              "name": "x"
+            },
+            "right": {
+              "type": "integer_literal",
+              "value": 7
+            }
+          },
+          "body": {
+            "type": "compound_statement",
+            "body": [
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "assignment_expression",
+                  "operator": "=",
+                  "left": {
+                    "type": "identifier",
+                    "name": "x"
+                  },
+                  "right": {
+                    "type": "binary_expression",
+                    "operator": "+",
+                    "left": {
+                      "type": "integer_literal",
+                      "value": 6
+                    },
+                    "right": {
+                      "type": "binary_expression",
+                      "operator": "/",
+                      "left": {
+                        "type": "binary_expression",
+                        "operator": "*",
+                        "left": {
+                          "type": "binary_expression",
+                          "operator": "/",
+                          "left": {
+                            "type": "integer_literal",
+                            "value": 8
+                          },
+                          "right": {
+                            "type": "integer_literal",
+                            "value": 9
+                          }
+                        },
+                        "right": {
+                          "type": "integer_literal",
+                          "value": 8
+                        }
+                      },
+                      "right": {
+                        "type": "integer_literal",
+                        "value": 3
+                      }
+                    }
+                  }
+                }
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "identifier",
+                  "name": "cin"
+                }
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "error"
+                }
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "identifier",
+                  "name": "x"
+                }
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "assignment_expression",
+                  "operator": "=",
+                  "left": {
+                    "type": "identifier",
+                    "name": "mas"
+                  },
+                  "right": {
+                    "type": "binary_expression",
+                    "operator": "/",
+                    "left": {
+                      "type": "integer_literal",
+                      "value": 36
+                    },
+                    "right": {
+                      "type": "integer_literal",
+                      "value": 7
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        },
+        {
+          "type": "expression_statement",
+          "expression": {
+            "type": "binary_expression",
+            "operator": "==",
+            "left": {
+              "type": "identifier",
+              "name": "y"
+            },
+            "right": {
+              "type": "integer_literal",
+              "value": 5
+            }
+          }
+        },
+        {
+          "type": "while_statement",
+          "condition": {
+            "type": "binary_expression",
+            "operator": "==",
+            "left": {
+              "type": "identifier",
+              "name": "y"
+            },
+            "right": {
+              "type": "integer_literal",
+              "value": 0
+            }
+          },
+          "body": {
+            "type": "compound_statement",
+            "body": [
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "identifier",
+                  "name": "cin"
+                }
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "error"
+                }
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "identifier",
+                  "name": "mas"
+                }
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "identifier",
+                  "name": "cout"
+                }
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "error"
+                }
+              },
+              {
+                "type": "expression_statement",
+                "expression": {
+                  "type": "identifier",
+                  "name": "x"
+                }
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ]
 }
