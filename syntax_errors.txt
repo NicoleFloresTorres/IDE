@@ -1,0 +1,2 @@
+Line 1, Col 1: Unexpected token in global scope. Found 'y'
+Line 1, Col 1: Unexpected token in global scope. Found 'y'

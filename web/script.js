@@ -39,6 +39,56 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    function displaySyntaxErrors(errors) {
+        const erroresContainer = document.getElementById('erroressinContent');
+
+        if (!erroresContainer) {
+            console.error("Syntax error container not found.");
+            return;
+        }
+
+        erroresContainer.value !== undefined
+            ? erroresContainer.value = ''
+            : erroresContainer.innerHTML = '';
+
+        if (errors.length > 0) {
+            const errorMessages = errors.map(error =>
+                `Error en línea ${error.line}, columna ${error.column}: ${error.error_message}`
+            ).join('\n');
+
+            if (erroresContainer.value !== undefined) {
+                erroresContainer.value = errorMessages;
+            } else {
+                erroresContainer.innerText = errorMessages;
+            }
+
+            // Automatically switch to the tab
+            const tab = document.querySelector('.tab-consola[data-tab="consola-erroressin"]');
+            if (tab) tab.click();
+        }
+    }
+    document.getElementById('sintacticoBtn').addEventListener('click', async function (event) {
+        event.preventDefault();
+
+        const code = editor.getValue();
+
+        console.log("Código a analizar:", code);
+
+        try {
+            const syntaxAnalysis = await eel.parse_code(code)();
+
+            
+
+            console.log("Análisis sintáctico:", syntaxAnalysis);
+            displaySyntaxErrors(syntaxAnalysis.errors);
+        } catch (error) {
+            console.error("Error calling eel.parse_code:", error);
+        }
+    });
+
+    
+
+
     var statusBar = document.createElement("div");
     statusBar.id = "statusBar";
     statusBar.style.padding = "8px";
