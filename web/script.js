@@ -67,6 +67,192 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tab) tab.click();
         }
     }
+
+    // Function to render the AST tree
+    function renderAST(data, container) {
+        container.innerHTML = '';
+        const rootUl = document.createElement('ul');
+        rootUl.className = 'ast-tree';
+        container.appendChild(rootUl);
+
+        const renderNode = (node, parentEl) => {
+            const li = document.createElement('li');
+            li.className = 'expanded';
+
+            const nodeDiv = document.createElement('div');
+            nodeDiv.className = 'tree-node';
+
+            const icon = document.createElement('div');
+            icon.className = 'node-icon';
+            icon.innerHTML = '<i class="fas fa-caret-down"></i>';
+
+            const content = document.createElement('div');
+            content.className = 'node-content';
+
+            const typeSpan = document.createElement('div');
+            typeSpan.className = 'node-type';
+            typeSpan.textContent = node.type;
+
+            content.appendChild(typeSpan);
+
+            // Add properties if available
+            const props = Object.keys(node).filter(key =>
+                key !== 'type' &&
+                key !== 'body' &&
+                key !== 'condition' &&
+                key !== 'then_branch' &&
+                key !== 'else_branch' &&
+                key !== 'left' &&
+                key !== 'right' &&
+                key !== 'expression' &&
+                key !== 'callee' &&
+                key !== 'arguments'
+            );
+
+            if (props.length > 0) {
+                const propsDiv = document.createElement('div');
+                propsDiv.className = 'node-props';
+
+                props.forEach(prop => {
+                    if (node[prop] !== null) {
+                        const propSpan = document.createElement('span');
+                        propSpan.className = 'node-prop';
+
+                        let valueText;
+                        if (Array.isArray(node[prop])) {
+                            // Handle arrays: show item count + preview
+                            valueText = `[${node[prop].length} items]`;
+                        } else if (typeof node[prop] === 'object') {
+                            // Handle objects: show type indication
+                            valueText = '{...}';
+                        } else {
+                            // Handle primitives directly
+                            valueText = node[prop];
+                        }
+
+                        propSpan.textContent = `${prop}: ${valueText}`;
+                        propsDiv.appendChild(propSpan);
+                    }
+                });
+
+                content.appendChild(propsDiv);
+            }
+
+            nodeDiv.appendChild(icon);
+            nodeDiv.appendChild(content);
+            li.appendChild(nodeDiv);
+
+            // Check if this node has children
+            const children = [];
+            const childKeys = ['body', 'condition', 'then_branch', 'else_branch', 'left', 'right', 'expression', 'arguments'];
+
+            childKeys.forEach(key => {
+                if (node[key] !== null && node[key] !== undefined) {
+                    if (Array.isArray(node[key])) {
+                        node[key].forEach(child => {
+                            children.push(child);
+                        });
+                    } else if (typeof node[key] === 'object') {
+                        children.push(node[key]);
+                    }
+                }
+            });
+
+            if (children.length > 0) {
+                const childUl = document.createElement('ul');
+                children.forEach(child => {
+                    renderNode(child, childUl);
+                });
+                li.appendChild(childUl);
+            } else {
+                li.classList.add('leaf');
+                li.classList.remove('expanded');
+            }
+
+            parentEl.appendChild(li);
+
+            // Add event listeners
+            nodeDiv.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (children.length > 0) {
+                    li.classList.toggle('expanded');
+                    li.classList.toggle('collapsed');
+                }
+            });
+
+            // Add context menu
+            nodeDiv.addEventListener('contextmenu', (e) => {
+                e.preventDefault();
+                const contextMenu = document.getElementById('contextMenu');
+                contextMenu.style.display = 'block';
+                contextMenu.style.left = `${e.pageX}px`;
+                contextMenu.style.top = `${e.pageY}px`;
+
+                // Store the current node
+                contextMenu.currentNode = li;
+
+                // Close the menu when clicking elsewhere
+                const closeMenu = () => {
+                    contextMenu.style.display = 'none';
+                    document.removeEventListener('click', closeMenu);
+                };
+
+                document.addEventListener('click', closeMenu);
+            });
+        };
+
+        renderNode(data.ast, rootUl);
+    }
+
+    // Function to expand all nodes
+    function expandAll() {
+        const nodes = document.querySelectorAll('#astTree li');
+        nodes.forEach(node => {
+            node.classList.add('expanded');
+            node.classList.remove('collapsed');
+        });
+    }
+
+    // Function to collapse all nodes
+    function collapseAll() {
+        const nodes = document.querySelectorAll('#astTree li');
+        nodes.forEach(node => {
+            if (!node.classList.contains('leaf')) {
+                node.classList.remove('expanded');
+                node.classList.add('collapsed');
+            }
+        });
+    }
+
+    // Function to expand children of a specific node
+    function expandChildren(node) {
+        const children = node.querySelectorAll('li');
+        children.forEach(child => {
+            child.classList.add('expanded');
+            child.classList.remove('collapsed');
+        });
+    }
+
+    // Function to collapse children of a specific node
+    function collapseChildren(node) {
+        const children = node.querySelectorAll('li');
+        children.forEach(child => {
+            if (!child.classList.contains('leaf')) {
+                child.classList.remove('expanded');
+                child.classList.add('collapsed');
+            }
+        });
+    }
+
+    // Function to expand all descendants of a node
+    function expandAllDescendants(node) {
+        const descendants = node.querySelectorAll('li');
+        descendants.forEach(descendant => {
+            descendant.classList.add('expanded');
+            descendant.classList.remove('collapsed');
+        });
+    }
+
     document.getElementById('sintacticoBtn').addEventListener('click', async function (event) {
         event.preventDefault();
 
@@ -77,16 +263,51 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const syntaxAnalysis = await eel.parse_code(code)();
 
-        
             console.log("Análisis sintáctico:", syntaxAnalysis);
+
+            // Display syntax errors if any
             displaySyntaxErrors(syntaxAnalysis.errors);
+
+            // Render AST tree if there are no errors
+            renderAST(syntaxAnalysis, document.getElementById('astTree'));
+
+            // Automatically switch to the syntax tab
+            const tab = document.querySelector('.tab[data-tab="sintactico"]');
+            if (tab) tab.click();
+
         } catch (error) {
             console.error("Error calling eel.parse_code:", error);
         }
     });
 
-    
+    // Add event listeners for AST controls
+    document.getElementById('expandAllBtn').addEventListener('click', expandAll);
+    document.getElementById('collapseAllBtn').addEventListener('click', collapseAll);
 
+    // Context menu event listeners
+    document.getElementById('expandChildren').addEventListener('click', () => {
+        const contextMenu = document.getElementById('contextMenu');
+        if (contextMenu.currentNode) {
+            expandChildren(contextMenu.currentNode);
+            contextMenu.style.display = 'none';
+        }
+    });
+
+    document.getElementById('collapseChildren').addEventListener('click', () => {
+        const contextMenu = document.getElementById('contextMenu');
+        if (contextMenu.currentNode) {
+            collapseChildren(contextMenu.currentNode);
+            contextMenu.style.display = 'none';
+        }
+    });
+
+    document.getElementById('expandAllChildren').addEventListener('click', () => {
+        const contextMenu = document.getElementById('contextMenu');
+        if (contextMenu.currentNode) {
+            expandAllDescendants(contextMenu.currentNode);
+            contextMenu.style.display = 'none';
+        }
+    });
 
     var statusBar = document.createElement("div");
     statusBar.id = "statusBar";
@@ -333,29 +554,29 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add CSS styles for the token table
     const style = document.createElement('style');
     style.textContent = `
-        .token-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        .token-table th {
-            background: var(--primary-purple);
-            color: white;
-            padding: 8px;
-            text-align: left;
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        
-        .token-table td {
-            padding: 8px;
-            border-bottom: 1px solid var(--secondary-lilac);
-        }
-        
-        .token-table tr:nth-child(even) {
-            background: var(--light-lilac);
-        }
-    `;
+                .token-table {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                
+                .token-table th {
+                    background: var(--primary-purple);
+                    color: white;
+                    padding: 8px;
+                    text-align: left;
+                    position: sticky;
+                    top: 0;
+                    z-index: 10;
+                }
+                
+                .token-table td {
+                    padding: 8px;
+                    border-bottom: 1px solid var(--secondary-lilac);
+                }
+                
+                .token-table tr:nth-child(even) {
+                    background: var(--light-lilac);
+                }
+            `;
     document.head.appendChild(style);
 });
