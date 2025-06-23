@@ -42,366 +42,402 @@ document.addEventListener('DOMContentLoaded', function () {
     let contadorNodo = 1;
 
     function renderAST(node, container, depth = 0) {
-        if (!node || typeof node !== 'object') return;
+    if (!node || typeof node !== 'object') return;
 
-        // Ocultar nodos tipo expression_statement
-        if (node.type === 'expression_statement' && node.expression) {
-            renderAST(node.expression, container, depth);
-            return;
-        }
+    // Ocultar nodos tipo expression_statement
+    if (node.type === 'expression_statement' && node.expression) {
+        renderAST(node.expression, container, depth);
+        return;
+    }
 
-        let tipo = node.type || 'Nodo';
-        let nombre = '';
+    let tipo = node.type || 'Nodo';
+    let nombre = '';
 
-        switch (tipo) {
-            case 'program':
-                tipo = 'Programa';
-                break;
-            case 'starting_point':
-                tipo = 'Punto de Inicio';
-                break;
-            case 'function_definition':
-                tipo = 'Bloque Principal';
-                nombre = node.name;
-                break;
-            case 'compound_statement':
-                tipo = 'Bloque';
-                break;
-            case 'declaration':
-                tipo = 'Declaración';
-                nombre = node.data_type;
-                break;
-            case 'assignment_expression':
-                tipo = 'Asignación';
-                nombre = node.left?.name || '';
-                break;
-            case 'call_expression':
-                tipo = 'Llamada a función';
-                nombre = node.callee;
-                break;
-            case 'string_literal':
-                tipo = 'Cadena';
-                nombre = node.value;
-                break;
-            case 'if_statement':
-                tipo = 'Sentencia If';
-                break;
-            case 'condition':
-                tipo = 'Condición';
-                break;
-            case 'then_branch':
-                tipo = 'Then';
-                break;
-            case 'else_branch':
-                tipo = 'Else';
-                break;
-            case 'identifier':
-                tipo = 'Variable';
-                nombre = node.name;
-                break;
-            case 'integer_literal':
-                tipo = 'Número Entero';
-                nombre = node.value;
-                break;
-            case 'float_literal':
-                tipo = 'Número Decimal';
-                nombre = node.value;
-                break;
-            case 'binary_expression':
-                tipo = 'Expresión Binaria';
-                nombre = node.operator;
-                break;
-            case 'for_statement':
-                tipo = 'Bucle For';
-                break;
-            case 'while_statement':
-                tipo = 'Bucle While';
-                break;
-            case 'for_init':
-                tipo = 'Inicialización For';
-                break;
-            case 'for_condition':
-                tipo = 'Condición For';
-                break;
-            case 'for_update':
-                tipo = 'Actualización For';
-                break;
-            case 'for_body':
-                tipo = 'Cuerpo For';
-                break;
-            case 'while_condition':
-                tipo = 'Condición While';
-                break;
-            case 'while_body':
-                tipo = 'Cuerpo While';
-                break;
-            case 'postfix_expression':
-                tipo = 'Expresión Postfija';
-                nombre = node.operator;
-            case 'do_while_statement':
-                tipo = 'Bucle Do-While';
-                break;
-            case 'do_while_body':
-                tipo = 'Cuerpo';
-                break;
-            case 'do_while_condition':
-                tipo = 'Condición';
-                break;
-            case 'binary_expression':
-                tipo = 'Expresión Binaria';
-                nombre = node.operator;
-                // Add support for shift operators
-                if (node.operator === '<<' || node.operator === '>>') {
-                    tipo = 'Operador de Desplazamiento';
-                    nombre = node.operator;
-                }
-                break;
-            default:
-                tipo = 'Nodo';
-        }
-
-        const displayText = `[${contadorNodo++}] ${tipo}${nombre != null ? ` (${nombre})` : ''}`;
-
-        // Create child container first to determine if we have children
-        const childContainer = document.createElement('ul');
-        childContainer.style.display = 'none';
-        childContainer.style.listStyle = 'none';
-        childContainer.style.margin = '0';
-        childContainer.style.padding = '0';
-
-        // Process children first to determine if node is expandable
-        if (node.type === 'program') {
-            node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
-        }
-
-        if (node.type === 'starting_point') {
-            node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
-        }
-
-        if (node.type === 'if_statement') {
-            const condWrapper = { type: 'condition', expression: node.condition };
-            renderAST(condWrapper, childContainer, depth + 1);
-
-            const thenWrapper = { type: 'then_branch', body: node.then_branch };
-            renderAST(thenWrapper, childContainer, depth + 1);
-
-            if (node.else_branch) {
-                const elseWrapper = { type: 'else_branch', body: node.else_branch };
-                renderAST(elseWrapper, childContainer, depth + 1);
-            }
-        }
-
-        if (node.type === 'condition' && node.expression) {
-            renderAST(node.expression, childContainer, depth + 1);
-        }
-
-        if (node.type === 'then_branch' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
-        }
-
-        if (node.type === 'else_branch' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
-        }
-
-        if (node.type === 'call_expression' && node.arguments) {
-            node.arguments.forEach(arg => {
-                renderAST(arg, childContainer, depth + 1);
-            });
-        }
-
-        if (node.type === 'function_definition') {
-            renderAST(node.body, childContainer, depth + 1);
-        }
-
-        if (node.type === 'compound_statement') {
-            node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
-        }
-
-        if (node.type === 'declaration') {
-            node.declarations?.forEach(variable => {
-                const varLi = document.createElement('li');
-                varLi.textContent = `[${contadorNodo++}] Variable (${variable.name})`;
-                varLi.style.marginLeft = `${(depth + 1) * 1.5}rem`;
-                varLi.style.fontFamily = 'monospace';
-                childContainer.appendChild(varLi);
-            });
-        }
-
-        if (node.type === 'assignment_expression') {
-            if (node.right) {
-                renderAST(node.right, childContainer, depth + 1);
-            }
-        }
-
-        if (node.type === 'binary_expression') {
-            // Add special handling for shift operators
+    switch (tipo) {
+        case 'program':
+            tipo = 'Programa';
+            break;
+        case 'starting_point':
+            tipo = 'Punto de Inicio';
+            break;
+        case 'function_definition':
+            tipo = 'Bloque Principal';
+            nombre = node.name;
+            break;
+        case 'compound_statement':
+            tipo = 'Bloque';
+            break;
+        case 'declaration':
+            tipo = 'Declaración';
+            nombre = node.data_type;
+            break;
+        case 'assignment_expression':
+            tipo = 'Asignación';
+            nombre = node.left?.name || '';
+            break;
+        case 'call_expression':
+            tipo = 'Llamada a función';
+            nombre = node.callee;
+            break;
+        case 'string_literal':
+            tipo = 'Cadena';
+            nombre = node.value;
+            break;
+        case 'if_statement':
+            tipo = 'Sentencia If';
+            break;
+        case 'condition':
+            tipo = 'Condición';
+            break;
+        case 'then_branch':
+            tipo = 'Then';
+            break;
+        case 'else_branch':
+            tipo = 'Else';
+            break;
+        case 'identifier':
+            tipo = 'Variable';
+            nombre = node.name;
+            break;
+        case 'integer_literal':
+            tipo = 'Número Entero';
+            nombre = node.value;
+            break;
+        case 'float_literal':
+            tipo = 'Número Decimal';
+            nombre = node.value;
+            break;
+        case 'binary_expression':
+            tipo = 'Expresión Binaria';
+            nombre = node.operator;
+            break;
+        case 'for_statement':
+            tipo = 'Bucle For';
+            break;
+        case 'while_statement':
+            tipo = 'Bucle While';
+            break;
+        case 'for_init':
+            tipo = 'Inicialización For';
+            break;
+        case 'for_condition':
+            tipo = 'Condición For';
+            break;
+        case 'for_update':
+            tipo = 'Actualización For';
+            break;
+        case 'for_body':
+            tipo = 'Cuerpo For';
+            break;
+        case 'while_condition':
+            tipo = 'Condición While';
+            break;
+        case 'while_body':
+            tipo = 'Cuerpo While';
+            break;
+        case 'postfix_expression':
+            tipo = 'Expresión Postfija';
+            nombre = node.operator;
+        case 'do_while_statement':
+            tipo = 'Bucle Do-While';
+            break;
+        case 'do_while_body':
+            tipo = 'Cuerpo';
+            break;
+        case 'do_while_condition':
+            tipo = 'Condición';
+            break;
+        case 'binary_expression':
+            tipo = 'Expresión Binaria';
+            nombre = node.operator;
+            // Add support for shift operators
             if (node.operator === '<<' || node.operator === '>>') {
-                const leftLabel = document.createElement('div');
-                leftLabel.textContent = `Operando Izquierdo`;
-                leftLabel.style.fontWeight = 'bold';
-                leftLabel.style.color = 'var(--primary-purple)';
-                childContainer.appendChild(leftLabel);
-                renderAST(node.left, childContainer, depth + 1);
-                
-                const rightLabel = document.createElement('div');
-                rightLabel.textContent = `Operando Derecho`;
-                rightLabel.style.fontWeight = 'bold';
-                rightLabel.style.color = 'var(--primary-purple)';
-                childContainer.appendChild(rightLabel);
-                renderAST(node.right, childContainer, depth + 1);
+                tipo = 'Operador de Desplazamiento';
+                nombre = node.operator;
+            }
+            break;
+        default:
+            tipo = 'Nodo';
+    }
+
+    const displayText = `[${contadorNodo++}] ${tipo}${nombre != null ? ` (${nombre})` : ''}`;
+
+    // Create child container first to determine if we have children
+    const childContainer = document.createElement('ul');
+    childContainer.style.display = 'none';
+    childContainer.style.listStyle = 'none';
+    childContainer.style.margin = '0';
+    childContainer.style.padding = '0';
+
+    // Process children first to determine if node is expandable
+    if (node.type === 'program') {
+        node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+    }
+
+    if (node.type === 'starting_point') {
+        node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+    }
+
+    if (node.type === 'if_statement') {
+        const condWrapper = { type: 'condition', expression: node.condition };
+        renderAST(condWrapper, childContainer, depth + 1);
+
+        const thenWrapper = { type: 'then_branch', body: node.then_branch };
+        renderAST(thenWrapper, childContainer, depth + 1);
+
+        if (node.else_branch) {
+            const elseWrapper = { type: 'else_branch', body: node.else_branch };
+            renderAST(elseWrapper, childContainer, depth + 1);
+        }
+    }
+
+    if (node.type === 'condition' && node.expression) {
+        renderAST(node.expression, childContainer, depth + 1);
+    }
+
+    if (node.type === 'then_branch' && node.body) {
+        renderAST(node.body, childContainer, depth + 1);
+    }
+
+    if (node.type === 'else_branch' && node.body) {
+        renderAST(node.body, childContainer, depth + 1);
+    }
+
+    if (node.type === 'call_expression' && node.arguments) {
+        node.arguments.forEach(arg => {
+            renderAST(arg, childContainer, depth + 1);
+        });
+    }
+
+    if (node.type === 'function_definition') {
+        renderAST(node.body, childContainer, depth + 1);
+    }
+
+    if (node.type === 'compound_statement') {
+        node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+    }
+
+    if (node.type === 'declaration') {
+        node.declarations?.forEach(variable => {
+            const varLi = document.createElement('li');
+            varLi.textContent = `[${contadorNodo++}] Variable (${variable.name})`;
+            varLi.style.marginLeft = `${(depth + 1) * 1.5}rem`;
+            varLi.style.fontFamily = 'monospace';
+            childContainer.appendChild(varLi);
+        });
+    }
+
+    if (node.type === 'assignment_expression') {
+        if (node.right) {
+            renderAST(node.right, childContainer, depth + 1);
+        }
+    }
+
+    if (node.type === 'binary_expression') {
+        // Add special handling for shift operators
+        if (node.operator === '<<' || node.operator === '>>') {
+            const leftLabel = document.createElement('div');
+            leftLabel.textContent = `Operando Izquierdo`;
+            leftLabel.style.fontWeight = 'bold';
+            leftLabel.style.color = 'var(--primary-purple)';
+            childContainer.appendChild(leftLabel);
+            renderAST(node.left, childContainer, depth + 1);
+            
+            const rightLabel = document.createElement('div');
+            rightLabel.textContent = `Operando Derecho`;
+            rightLabel.style.fontWeight = 'bold';
+            rightLabel.style.color = 'var(--primary-purple)';
+            childContainer.appendChild(rightLabel);
+            renderAST(node.right, childContainer, depth + 1);
+        } else {
+            // Regular binary expression handling
+            if (node.left) renderAST(node.left, childContainer, depth + 1);
+            if (node.right) renderAST(node.right, childContainer, depth + 1);
+        }
+    }
+
+    if (node.type === 'for_statement') {
+        // Inicialización
+        if (node.init) {
+            const initWrapper = { type: 'for_init', expression: node.init };
+            renderAST(initWrapper, childContainer, depth + 1);
+        }
+
+        // Condición
+        if (node.condition) {
+            const condWrapper = { type: 'for_condition', expression: node.condition };
+            renderAST(condWrapper, childContainer, depth + 1);
+        }
+
+        // Actualización
+        if (node.update) {
+            const updateWrapper = { type: 'for_update', expression: node.update };
+            renderAST(updateWrapper, childContainer, depth + 1);
+        }
+
+        // Cuerpo
+        if (node.body) {
+            const bodyWrapper = { type: 'for_body', body: node.body };
+            renderAST(bodyWrapper, childContainer, depth + 1);
+        }
+    }
+
+    // Procesar bucles while
+    if (node.type === 'while_statement') {
+        // Condición
+        if (node.condition) {
+            const condWrapper = { type: 'while_condition', expression: node.condition };
+            renderAST(condWrapper, childContainer, depth + 1);
+        }
+
+        // Cuerpo
+        if (node.body) {
+            const bodyWrapper = { type: 'while_body', body: node.body };
+            renderAST(bodyWrapper, childContainer, depth + 1);
+        }
+    }
+    if (node.type === 'for_init' && node.expression) {
+        renderAST(node.expression, childContainer, depth + 1);
+    }
+
+    if (node.type === 'for_condition' && node.expression) {
+        renderAST(node.expression, childContainer, depth + 1);
+    }
+
+    if (node.type === 'for_update' && node.expression) {
+        renderAST(node.expression, childContainer, depth + 1);
+    }
+
+    if (node.type === 'for_body' && node.body) {
+        renderAST(node.body, childContainer, depth + 1);
+    }
+
+    // Procesar los wrappers creados para las partes del while
+    if (node.type === 'while_condition' && node.expression) {
+        renderAST(node.expression, childContainer, depth + 1);
+    }
+
+    if (node.type === 'while_body' && node.body) {
+        renderAST(node.body, childContainer, depth + 1);
+    }
+
+    // Procesar expresiones postfijas
+    if (node.type === 'postfix_expression' && node.operand) {
+        renderAST(node.operand, childContainer, depth + 1);
+    }
+
+    if (node.type === 'do_while_statement') {
+        // Body
+        if (node.body) {
+            const bodyWrapper = { type: 'do_while_body', body: node.body };
+            renderAST(bodyWrapper, childContainer, depth + 1);
+        }
+
+        // Condition
+        if (node.condition) {
+            const condWrapper = { type: 'do_while_condition', expression: node.condition };
+            renderAST(condWrapper, childContainer, depth + 1);
+        }
+    }
+
+    if (node.type === 'do_while_body' && node.body) {
+        renderAST(node.body, childContainer, depth + 1);
+    }
+
+    // Process do-while condition
+    if (node.type === 'do_while_condition' && node.expression) {
+        renderAST(node.expression, childContainer, depth + 1);
+    }
+
+    const ul = document.createElement('ul');
+    ul.style.listStyle = 'none';
+    ul.style.paddingLeft = '0.5rem';
+
+    const li = document.createElement('li');
+    li.style.marginLeft = `${depth * 1}rem`;
+
+    const nodeHeader = document.createElement('div');
+    nodeHeader.style.display = 'flex';
+    nodeHeader.style.alignItems = 'center';
+    nodeHeader.style.fontFamily = 'monospace';
+
+    // Only add toggle if node has children
+    const hasChildren = childContainer.childElementCount > 0;
+
+    if (hasChildren) {
+        const toggle = document.createElement('span');
+        toggle.textContent = '▶ ';
+        toggle.style.cursor = 'pointer';
+        toggle.style.userSelect = 'none';
+        toggle.style.marginRight = '0.3rem';
+
+        // Función para expandir/contraer todos los hijos recursivamente
+        function expandAllChildren(container, expand = true) {
+            // Expandir/contraer el contenedor actual
+            if (expand) {
+                container.style.display = 'block';
             } else {
-                // Regular binary expression handling
-                if (node.left) renderAST(node.left, childContainer, depth + 1);
-                if (node.right) renderAST(node.right, childContainer, depth + 1);
-            }
-        }
-
-        if (node.type === 'for_statement') {
-            // Inicialización
-            if (node.init) {
-                const initWrapper = { type: 'for_init', expression: node.init };
-                renderAST(initWrapper, childContainer, depth + 1);
+                container.style.display = 'none';
             }
 
-            // Condición
-            if (node.condition) {
-                const condWrapper = { type: 'for_condition', expression: node.condition };
-                renderAST(condWrapper, childContainer, depth + 1);
-            }
-
-            // Actualización
-            if (node.update) {
-                const updateWrapper = { type: 'for_update', expression: node.update };
-                renderAST(updateWrapper, childContainer, depth + 1);
-            }
-
-            // Cuerpo
-            if (node.body) {
-                const bodyWrapper = { type: 'for_body', body: node.body };
-                renderAST(bodyWrapper, childContainer, depth + 1);
-            }
+            // Buscar todos los toggles dentro de este contenedor
+            const childToggles = container.querySelectorAll('span[style*="cursor: pointer"]');
+            childToggles.forEach(childToggle => {
+                const childContainer = childToggle.parentElement.parentElement.querySelector('ul[style*="list-style: none"]');
+                if (childContainer) {
+                    if (expand) {
+                        childContainer.style.display = 'block';
+                        childToggle.textContent = '▼ ';
+                    } else {
+                        childContainer.style.display = 'none';
+                        childToggle.textContent = '▶ ';
+                    }
+                    // Recursivamente expandir/contraer hijos
+                    expandAllChildren(childContainer, expand);
+                }
+            });
         }
 
-        // Procesar bucles while
-        if (node.type === 'while_statement') {
-            // Condición
-            if (node.condition) {
-                const condWrapper = { type: 'while_condition', expression: node.condition };
-                renderAST(condWrapper, childContainer, depth + 1);
-            }
-
-            // Cuerpo
-            if (node.body) {
-                const bodyWrapper = { type: 'while_body', body: node.body };
-                renderAST(bodyWrapper, childContainer, depth + 1);
-            }
-        }
-        if (node.type === 'for_init' && node.expression) {
-            renderAST(node.expression, childContainer, depth + 1);
-        }
-
-        if (node.type === 'for_condition' && node.expression) {
-            renderAST(node.expression, childContainer, depth + 1);
-        }
-
-        if (node.type === 'for_update' && node.expression) {
-            renderAST(node.expression, childContainer, depth + 1);
-        }
-
-        if (node.type === 'for_body' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
-        }
-
-        // Procesar los wrappers creados para las partes del while
-        if (node.type === 'while_condition' && node.expression) {
-            renderAST(node.expression, childContainer, depth + 1);
-        }
-
-        if (node.type === 'while_body' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
-        }
-
-        // Procesar expresiones postfijas
-        if (node.type === 'postfix_expression' && node.operand) {
-            renderAST(node.operand, childContainer, depth + 1);
-        }
-
-        if (node.type === 'do_while_statement') {
-            // Body
-            if (node.body) {
-                const bodyWrapper = { type: 'do_while_body', body: node.body };
-                renderAST(bodyWrapper, childContainer, depth + 1);
-            }
-
-            // Condition
-            if (node.condition) {
-                const condWrapper = { type: 'do_while_condition', expression: node.condition };
-                renderAST(condWrapper, childContainer, depth + 1);
-            }
-        }
-
-        if (node.type === 'do_while_body' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
-        }
-
-        // Process do-while condition
-        if (node.type === 'do_while_condition' && node.expression) {
-            renderAST(node.expression, childContainer, depth + 1);
-        }
-
-        
-
-        const ul = document.createElement('ul');
-        ul.style.listStyle = 'none';
-        ul.style.paddingLeft = '0.5rem';
-
-        const li = document.createElement('li');
-        li.style.marginLeft = `${depth * 1}rem`;
-
-        const nodeHeader = document.createElement('div');
-        nodeHeader.style.display = 'flex';
-        nodeHeader.style.alignItems = 'center';
-        nodeHeader.style.fontFamily = 'monospace';
-
-        // Only add toggle if node has children
-        const hasChildren = childContainer.childElementCount > 0;
-
-        if (hasChildren) {
-            const toggle = document.createElement('span');
-            toggle.textContent = '▶ ';
-            toggle.style.cursor = 'pointer';
-            toggle.style.userSelect = 'none';
-            toggle.style.marginRight = '0.3rem';
-
-            toggle.addEventListener('click', () => {
-                const visible = childContainer.style.display === 'block';
+        toggle.addEventListener('click', (e) => {
+            e.stopPropagation(); // Evitar propagación del evento
+            const visible = childContainer.style.display === 'block';
+            
+            // Si es el nodo raíz "Programa" y se está expandiendo
+            if (node.type === 'program' && !visible) {
+                // Expandir todo el árbol
+                childContainer.style.display = 'block';
+                toggle.textContent = '▼ ';
+                expandAllChildren(childContainer, true);
+            } else {
+                // Comportamiento normal: solo expandir/contraer este nodo
                 childContainer.style.display = visible ? 'none' : 'block';
                 toggle.textContent = visible ? '▶ ' : '▼ ';
-            });
+            }
+        });
 
-            nodeHeader.appendChild(toggle);
-        } else {
-            // Add spacer to align leaf nodes with parent nodes
-            const spacer = document.createElement('span');
-            spacer.textContent = '  '; // Two spaces for alignment
-            spacer.style.marginRight = '0.3rem';
-            nodeHeader.appendChild(spacer);
-        }
-
-        const label = document.createElement('span');
-        label.textContent = displayText;
-        label.style.fontWeight = 'normal';
-
-        nodeHeader.appendChild(label);
-        li.appendChild(nodeHeader);
-
-        if (hasChildren) {
-            li.appendChild(childContainer);
-        }
-
-        ul.appendChild(li);
-        container.appendChild(ul);
+        nodeHeader.appendChild(toggle);
+    } else {
+        // Add spacer to align leaf nodes with parent nodes
+        const spacer = document.createElement('span');
+        spacer.textContent = '  '; // Two spaces for alignment
+        spacer.style.marginRight = '0.3rem';
+        nodeHeader.appendChild(spacer);
     }
+
+    const label = document.createElement('span');
+    label.textContent = displayText;
+    label.style.fontWeight = 'normal';
+
+    nodeHeader.appendChild(label);
+    li.appendChild(nodeHeader);
+
+    if (hasChildren) {
+        li.appendChild(childContainer);
+    }
+
+    ul.appendChild(li);
+    container.appendChild(ul);
+}
 
     function displaySyntaxErrors(errors) {
         const erroresContainer = document.getElementById('erroressinContent');
