@@ -40,6 +40,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     let contadorNodo = 1;
+
     function renderAST(node, container, depth = 0) {
         if (!node || typeof node !== 'object') return;
 
@@ -49,19 +50,15 @@ document.addEventListener('DOMContentLoaded', function () {
             return;
         }
 
-        const ul = document.createElement('ul');
-        ul.style.listStyle = 'none';
-        ul.style.paddingLeft = '0.5rem'; // sin padding adicional
-
-        const li = document.createElement('li');
-        li.style.marginLeft = `${depth * 1}rem`; // más compacto
-
         let tipo = node.type || 'Nodo';
         let nombre = '';
 
         switch (tipo) {
             case 'program':
                 tipo = 'Programa';
+                break;
+            case 'starting_point':
+                tipo = 'Punto de Inicio';
                 break;
             case 'function_definition':
                 tipo = 'Bloque Principal';
@@ -77,6 +74,26 @@ document.addEventListener('DOMContentLoaded', function () {
             case 'assignment_expression':
                 tipo = 'Asignación';
                 nombre = node.left?.name || '';
+                break;
+            case 'call_expression':
+                tipo = 'Llamada a función';
+                nombre = node.callee;
+                break;
+            case 'string_literal':
+                tipo = 'Cadena';
+                nombre = node.value;
+                break;
+            case 'if_statement':
+                tipo = 'Sentencia If';
+                break;
+            case 'condition':
+                tipo = 'Condición';
+                break;
+            case 'then_branch':
+                tipo = 'Then';
+                break;
+            case 'else_branch':
+                tipo = 'Else';
                 break;
             case 'identifier':
                 tipo = 'Variable';
@@ -94,41 +111,85 @@ document.addEventListener('DOMContentLoaded', function () {
                 tipo = 'Expresión Binaria';
                 nombre = node.operator;
                 break;
+            case 'for_statement':
+                tipo = 'Bucle For';
+                break;
+            case 'while_statement':
+                tipo = 'Bucle While';
+                break;
+            case 'for_init':
+                tipo = 'Inicialización For';
+                break;
+            case 'for_condition':
+                tipo = 'Condición For';
+                break;
+            case 'for_update':
+                tipo = 'Actualización For';
+                break;
+            case 'for_body':
+                tipo = 'Cuerpo For';
+                break;
+            case 'while_condition':
+                tipo = 'Condición While';
+                break;
+            case 'while_body':
+                tipo = 'Cuerpo While';
+                break;
+            case 'postfix_expression':
+                tipo = 'Expresión Postfija';
+                nombre = node.operator;
+                break;
             default:
                 tipo = 'Nodo';
         }
 
         const displayText = `[${contadorNodo++}] ${tipo}${nombre ? ` (${nombre})` : ''}`;
 
-        const toggle = document.createElement('span');
-        toggle.textContent = '▶ ';
-        toggle.style.cursor = 'pointer';
-        toggle.style.userSelect = 'none';
-
-        const label = document.createElement('span');
-        label.textContent = displayText;
-        label.style.marginLeft = '0.3rem';
-        label.style.fontWeight = 'normal'; // quitar bold
-        label.style.fontFamily = 'monospace'; // estilo tipo consola
-
-        li.appendChild(toggle);
-        li.appendChild(label);
-
+        // Create child container first to determine if we have children
         const childContainer = document.createElement('ul');
         childContainer.style.display = 'none';
         childContainer.style.listStyle = 'none';
         childContainer.style.margin = '0';
         childContainer.style.padding = '0';
 
-        toggle.addEventListener('click', () => {
-            const visible = childContainer.style.display === 'block';
-            childContainer.style.display = visible ? 'none' : 'block';
-            toggle.textContent = visible ? '▶ ' : '▼ ';
-        });
-
-        // Procesar hijos
+        // Process children first to determine if node is expandable
         if (node.type === 'program') {
             node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+        }
+
+        if (node.type === 'starting_point') {
+            node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+        }
+
+        if (node.type === 'if_statement') {
+            const condWrapper = { type: 'condition', expression: node.condition };
+            renderAST(condWrapper, childContainer, depth + 1);
+
+            const thenWrapper = { type: 'then_branch', body: node.then_branch };
+            renderAST(thenWrapper, childContainer, depth + 1);
+
+            if (node.else_branch) {
+                const elseWrapper = { type: 'else_branch', body: node.else_branch };
+                renderAST(elseWrapper, childContainer, depth + 1);
+            }
+        }
+
+        if (node.type === 'condition' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'then_branch' && node.body) {
+            renderAST(node.body, childContainer, depth + 1);
+        }
+
+        if (node.type === 'else_branch' && node.body) {
+            renderAST(node.body, childContainer, depth + 1);
+        }
+
+        if (node.type === 'call_expression' && node.arguments) {
+            node.arguments.forEach(arg => {
+                renderAST(arg, childContainer, depth + 1);
+            });
         }
 
         if (node.type === 'function_definition') {
@@ -160,22 +221,126 @@ document.addEventListener('DOMContentLoaded', function () {
             if (node.right) renderAST(node.right, childContainer, depth + 1);
         }
 
-        li.appendChild(childContainer);
+        if (node.type === 'for_statement') {
+            // Inicialización
+            if (node.init) {
+                const initWrapper = { type: 'for_init', expression: node.init };
+                renderAST(initWrapper, childContainer, depth + 1);
+            }
+
+            // Condición
+            if (node.condition) {
+                const condWrapper = { type: 'for_condition', expression: node.condition };
+                renderAST(condWrapper, childContainer, depth + 1);
+            }
+
+            // Actualización
+            if (node.update) {
+                const updateWrapper = { type: 'for_update', expression: node.update };
+                renderAST(updateWrapper, childContainer, depth + 1);
+            }
+
+            // Cuerpo
+            if (node.body) {
+                const bodyWrapper = { type: 'for_body', body: node.body };
+                renderAST(bodyWrapper, childContainer, depth + 1);
+            }
+        }
+
+        // Procesar bucles while
+        if (node.type === 'while_statement') {
+            // Condición
+            if (node.condition) {
+                const condWrapper = { type: 'while_condition', expression: node.condition };
+                renderAST(condWrapper, childContainer, depth + 1);
+            }
+
+            // Cuerpo
+            if (node.body) {
+                const bodyWrapper = { type: 'while_body', body: node.body };
+                renderAST(bodyWrapper, childContainer, depth + 1);
+            }
+        }
+        if (node.type === 'for_init' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'for_condition' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'for_update' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'for_body' && node.body) {
+            renderAST(node.body, childContainer, depth + 1);
+        }
+
+        // Procesar los wrappers creados para las partes del while
+        if (node.type === 'while_condition' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'while_body' && node.body) {
+            renderAST(node.body, childContainer, depth + 1);
+        }
+
+        // Procesar expresiones postfijas
+        if (node.type === 'postfix_expression' && node.operand) {
+            renderAST(node.operand, childContainer, depth + 1);
+        }
+
+        const ul = document.createElement('ul');
+        ul.style.listStyle = 'none';
+        ul.style.paddingLeft = '0.5rem';
+
+        const li = document.createElement('li');
+        li.style.marginLeft = `${depth * 1}rem`;
+
+        const nodeHeader = document.createElement('div');
+        nodeHeader.style.display = 'flex';
+        nodeHeader.style.alignItems = 'center';
+        nodeHeader.style.fontFamily = 'monospace';
+
+        // Only add toggle if node has children
+        const hasChildren = childContainer.childElementCount > 0;
+
+        if (hasChildren) {
+            const toggle = document.createElement('span');
+            toggle.textContent = '▶ ';
+            toggle.style.cursor = 'pointer';
+            toggle.style.userSelect = 'none';
+            toggle.style.marginRight = '0.3rem';
+
+            toggle.addEventListener('click', () => {
+                const visible = childContainer.style.display === 'block';
+                childContainer.style.display = visible ? 'none' : 'block';
+                toggle.textContent = visible ? '▶ ' : '▼ ';
+            });
+
+            nodeHeader.appendChild(toggle);
+        } else {
+            // Add spacer to align leaf nodes with parent nodes
+            const spacer = document.createElement('span');
+            spacer.textContent = '  '; // Two spaces for alignment
+            spacer.style.marginRight = '0.3rem';
+            nodeHeader.appendChild(spacer);
+        }
+
+        const label = document.createElement('span');
+        label.textContent = displayText;
+        label.style.fontWeight = 'normal';
+
+        nodeHeader.appendChild(label);
+        li.appendChild(nodeHeader);
+
+        if (hasChildren) {
+            li.appendChild(childContainer);
+        }
+
         ul.appendChild(li);
         container.appendChild(ul);
-    }
-
-    function traducirTipo(tipo) {
-        const mapa = {
-            'program': 'Programa',
-            'expression_statement': '',
-            'identifier': 'Variable',
-            'integer_literal': 'Número Entero',
-            'float_literal': 'Número Decimal',
-            'binary_expression': 'Expresión Binaria',
-            'assignment_expression': 'Asignación'
-        };
-        return mapa[tipo] || tipo;
     }
 
     function displaySyntaxErrors(errors) {
@@ -210,19 +375,55 @@ document.addEventListener('DOMContentLoaded', function () {
     document.getElementById('sintacticoBtn').addEventListener('click', async function (event) {
         event.preventDefault();
 
+        // Automatically switch to the Sintáctico tab in the right panel
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Remove active class from all tabs and content
+        tabs.forEach(t => t.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+
+        // Add active class to Sintáctico tab and content
+        const sintacticoTab = document.querySelector('.tab[data-tab="sintactico"]');
+        const sintacticoContent = document.getElementById('sintactico');
+
+        if (sintacticoTab) sintacticoTab.classList.add('active');
+        if (sintacticoContent) sintacticoContent.classList.add('active');
+
         const code = editor.getValue();
         try {
             const syntaxAnalysis = await eel.parse_code(code)();
+
+            // Clear previous AST and errors
             const container = document.getElementById('sintacticoContent');
             container.innerHTML = '';
-            contadorNodo = 1;
-            renderAST(syntaxAnalysis.ast, container);
+            displaySyntaxErrors([]); // Clear previous errors
+
+            // Handle analysis results
+            // ALWAYS display AST if present in response
+            if (syntaxAnalysis.ast) {
+                contadorNodo = 1;
+                renderAST(syntaxAnalysis.ast, container);
+            } else {
+                console.warn("No AST found in response");
+            }
+
+            // Display errors if they exist
+            if (syntaxAnalysis.errors && syntaxAnalysis.errors.length > 0) {
+                displaySyntaxErrors(syntaxAnalysis.errors);
+            }
         } catch (error) {
-            console.error("Error llamando a eel.parse_code:", error);
+            console.error("Error calling eel.parse_code:", error);
+            // Display error in UI
+            displaySyntaxErrors([{
+                line: 1,
+                column: 1,
+                error_message: `Analysis failed: ${error.message || error}`
+            }]);
         }
     });
 
-    
+
 
 
     var statusBar = document.createElement("div");
@@ -292,6 +493,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Get lexical analysis from the backend
             const lexicalAnalysis = await eel.lex(fileContent)();
+
+            console.log(lexicalAnalysis);
 
             // Process the lexical analysis data
             processLexicalAnalysis(lexicalAnalysis);

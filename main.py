@@ -861,12 +861,47 @@ class Parser:
             "body": body
         }
 
+def transform_ast(node):
+    if isinstance(node, dict):
+        # First, recursively transform all children
+        for key in list(node.keys()):
+            node[key] = transform_ast(node[key])
+        
+        # Replace postfix_expression with assignment
+        if node.get('type') == 'postfix_expression' and node.get('operator') in ['++', '--']:
+            operator = node['operator']
+            operand = node['operand']
+            
+            # Create new assignment node
+            return {
+                "type": "assignment_expression",
+                "operator": "=",
+                "left": operand,
+                "right": {
+                    "type": "binary_expression",
+                    "operator": "+" if operator == "++" else "-",
+                    "left": operand,
+                    "right": {
+                        "type": "integer_literal",
+                        "value": 1
+                    }
+                }
+            }
+        return node
+    elif isinstance(node, list):
+        return [transform_ast(item) for item in node]
+    else:
+        return node
+
 
 @eel.expose
 def parse_code(code):
     tokens, lex_errors = lex(code)
     parser = Parser(tokens, lex_errors)
     ast = parser.parse()
+    
+    # Apply transformation to AST
+    transformed_ast = transform_ast(ast)
     
     # Convert to JSON-serializable format
     def convert_node(node):
@@ -877,7 +912,7 @@ def parse_code(code):
         else:
             return node
             
-    json_ast = convert_node(ast)
+    json_ast = convert_node(transformed_ast)
     all_errors = lex_errors + parser.errors
     
     # Write AST and errors to files
