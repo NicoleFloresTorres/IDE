@@ -138,12 +138,29 @@ document.addEventListener('DOMContentLoaded', function () {
             case 'postfix_expression':
                 tipo = 'Expresión Postfija';
                 nombre = node.operator;
+            case 'do_while_statement':
+                tipo = 'Bucle Do-While';
+                break;
+            case 'do_while_body':
+                tipo = 'Cuerpo';
+                break;
+            case 'do_while_condition':
+                tipo = 'Condición';
+                break;
+            case 'binary_expression':
+                tipo = 'Expresión Binaria';
+                nombre = node.operator;
+                // Add support for shift operators
+                if (node.operator === '<<' || node.operator === '>>') {
+                    tipo = 'Operador de Desplazamiento';
+                    nombre = node.operator;
+                }
                 break;
             default:
                 tipo = 'Nodo';
         }
 
-        const displayText = `[${contadorNodo++}] ${tipo}${nombre ? ` (${nombre})` : ''}`;
+        const displayText = `[${contadorNodo++}] ${tipo}${nombre != null ? ` (${nombre})` : ''}`;
 
         // Create child container first to determine if we have children
         const childContainer = document.createElement('ul');
@@ -217,8 +234,26 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (node.type === 'binary_expression') {
-            if (node.left) renderAST(node.left, childContainer, depth + 1);
-            if (node.right) renderAST(node.right, childContainer, depth + 1);
+            // Add special handling for shift operators
+            if (node.operator === '<<' || node.operator === '>>') {
+                const leftLabel = document.createElement('div');
+                leftLabel.textContent = `Operando Izquierdo`;
+                leftLabel.style.fontWeight = 'bold';
+                leftLabel.style.color = 'var(--primary-purple)';
+                childContainer.appendChild(leftLabel);
+                renderAST(node.left, childContainer, depth + 1);
+                
+                const rightLabel = document.createElement('div');
+                rightLabel.textContent = `Operando Derecho`;
+                rightLabel.style.fontWeight = 'bold';
+                rightLabel.style.color = 'var(--primary-purple)';
+                childContainer.appendChild(rightLabel);
+                renderAST(node.right, childContainer, depth + 1);
+            } else {
+                // Regular binary expression handling
+                if (node.left) renderAST(node.left, childContainer, depth + 1);
+                if (node.right) renderAST(node.right, childContainer, depth + 1);
+            }
         }
 
         if (node.type === 'for_statement') {
@@ -290,6 +325,31 @@ document.addEventListener('DOMContentLoaded', function () {
         if (node.type === 'postfix_expression' && node.operand) {
             renderAST(node.operand, childContainer, depth + 1);
         }
+
+        if (node.type === 'do_while_statement') {
+            // Body
+            if (node.body) {
+                const bodyWrapper = { type: 'do_while_body', body: node.body };
+                renderAST(bodyWrapper, childContainer, depth + 1);
+            }
+
+            // Condition
+            if (node.condition) {
+                const condWrapper = { type: 'do_while_condition', expression: node.condition };
+                renderAST(condWrapper, childContainer, depth + 1);
+            }
+        }
+
+        if (node.type === 'do_while_body' && node.body) {
+            renderAST(node.body, childContainer, depth + 1);
+        }
+
+        // Process do-while condition
+        if (node.type === 'do_while_condition' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        
 
         const ul = document.createElement('ul');
         ul.style.listStyle = 'none';
@@ -393,6 +453,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const code = editor.getValue();
         try {
             const syntaxAnalysis = await eel.parse_code(code)();
+            console.log(syntaxAnalysis);
 
             // Clear previous AST and errors
             const container = document.getElementById('sintacticoContent');
