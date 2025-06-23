@@ -39,6 +39,145 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    let contadorNodo = 1;
+    function renderAST(node, container, depth = 0) {
+        if (!node || typeof node !== 'object') return;
+
+        // Ocultar nodos tipo expression_statement
+        if (node.type === 'expression_statement' && node.expression) {
+            renderAST(node.expression, container, depth);
+            return;
+        }
+
+        const ul = document.createElement('ul');
+        ul.style.listStyle = 'none';
+        ul.style.paddingLeft = '0.5rem'; // sin padding adicional
+
+        const li = document.createElement('li');
+        li.style.marginLeft = `${depth * 1}rem`; // más compacto
+
+        let tipo = node.type || 'Nodo';
+        let nombre = '';
+
+        switch (tipo) {
+            case 'program':
+                tipo = 'Programa';
+                break;
+            case 'function_definition':
+                tipo = 'Bloque Principal';
+                nombre = node.name;
+                break;
+            case 'compound_statement':
+                tipo = 'Bloque';
+                break;
+            case 'declaration':
+                tipo = 'Declaración';
+                nombre = node.data_type;
+                break;
+            case 'assignment_expression':
+                tipo = 'Asignación';
+                nombre = node.left?.name || '';
+                break;
+            case 'identifier':
+                tipo = 'Variable';
+                nombre = node.name;
+                break;
+            case 'integer_literal':
+                tipo = 'Número Entero';
+                nombre = node.value;
+                break;
+            case 'float_literal':
+                tipo = 'Número Decimal';
+                nombre = node.value;
+                break;
+            case 'binary_expression':
+                tipo = 'Expresión Binaria';
+                nombre = node.operator;
+                break;
+            default:
+                tipo = 'Nodo';
+        }
+
+        const displayText = `[${contadorNodo++}] ${tipo}${nombre ? ` (${nombre})` : ''}`;
+
+        const toggle = document.createElement('span');
+        toggle.textContent = '▶ ';
+        toggle.style.cursor = 'pointer';
+        toggle.style.userSelect = 'none';
+
+        const label = document.createElement('span');
+        label.textContent = displayText;
+        label.style.marginLeft = '0.3rem';
+        label.style.fontWeight = 'normal'; // quitar bold
+        label.style.fontFamily = 'monospace'; // estilo tipo consola
+
+        li.appendChild(toggle);
+        li.appendChild(label);
+
+        const childContainer = document.createElement('ul');
+        childContainer.style.display = 'none';
+        childContainer.style.listStyle = 'none';
+        childContainer.style.margin = '0';
+        childContainer.style.padding = '0';
+
+        toggle.addEventListener('click', () => {
+            const visible = childContainer.style.display === 'block';
+            childContainer.style.display = visible ? 'none' : 'block';
+            toggle.textContent = visible ? '▶ ' : '▼ ';
+        });
+
+        // Procesar hijos
+        if (node.type === 'program') {
+            node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+        }
+
+        if (node.type === 'function_definition') {
+            renderAST(node.body, childContainer, depth + 1);
+        }
+
+        if (node.type === 'compound_statement') {
+            node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+        }
+
+        if (node.type === 'declaration') {
+            node.declarations?.forEach(variable => {
+                const varLi = document.createElement('li');
+                varLi.textContent = `[${contadorNodo++}] Variable (${variable.name})`;
+                varLi.style.marginLeft = `${(depth + 1) * 1.5}rem`;
+                varLi.style.fontFamily = 'monospace';
+                childContainer.appendChild(varLi);
+            });
+        }
+
+        if (node.type === 'assignment_expression') {
+            if (node.right) {
+                renderAST(node.right, childContainer, depth + 1);
+            }
+        }
+
+        if (node.type === 'binary_expression') {
+            if (node.left) renderAST(node.left, childContainer, depth + 1);
+            if (node.right) renderAST(node.right, childContainer, depth + 1);
+        }
+
+        li.appendChild(childContainer);
+        ul.appendChild(li);
+        container.appendChild(ul);
+    }
+
+    function traducirTipo(tipo) {
+        const mapa = {
+            'program': 'Programa',
+            'expression_statement': '',
+            'identifier': 'Variable',
+            'integer_literal': 'Número Entero',
+            'float_literal': 'Número Decimal',
+            'binary_expression': 'Expresión Binaria',
+            'assignment_expression': 'Asignación'
+        };
+        return mapa[tipo] || tipo;
+    }
+
     function displaySyntaxErrors(errors) {
         const erroresContainer = document.getElementById('erroressinContent');
 
@@ -67,21 +206,19 @@ document.addEventListener('DOMContentLoaded', function () {
             if (tab) tab.click();
         }
     }
+
     document.getElementById('sintacticoBtn').addEventListener('click', async function (event) {
         event.preventDefault();
 
         const code = editor.getValue();
-
-        console.log("Código a analizar:", code);
-
         try {
             const syntaxAnalysis = await eel.parse_code(code)();
-
-        
-            console.log("Análisis sintáctico:", syntaxAnalysis);
-            displaySyntaxErrors(syntaxAnalysis.errors);
+            const container = document.getElementById('sintacticoContent');
+            container.innerHTML = '';
+            contadorNodo = 1;
+            renderAST(syntaxAnalysis.ast, container);
         } catch (error) {
-            console.error("Error calling eel.parse_code:", error);
+            console.error("Error llamando a eel.parse_code:", error);
         }
     });
 
