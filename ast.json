@@ -393,105 +393,115 @@
               "value": 3
             }
           },
-          "then_branch": {
-            "type": "expression_statement",
-            "expression": {
-              "type": "assignment_expression",
-              "operator": "=",
-              "left": {
-                "type": "identifier",
-                "name": "y"
-              },
-              "right": {
-                "type": "binary_expression",
-                "operator": "+",
-                "left": {
-                  "type": "identifier",
-                  "name": "a"
-                },
-                "right": {
-                  "type": "integer_literal",
-                  "value": 3
-                }
-              }
-            }
-          },
-          "else_branch": {
-            "type": "if_statement",
-            "condition": {
-              "type": "binary_expression",
-              "operator": "&&",
-              "left": {
-                "type": "binary_expression",
-                "operator": ">",
-                "left": {
-                  "type": "integer_literal",
-                  "value": 4
-                },
-                "right": {
-                  "type": "integer_literal",
-                  "value": 2
-                }
-              },
-              "right": {
-                "type": "identifier",
-                "name": "true"
-              }
-            },
-            "then_branch": {
+          "then_branch": [
+            {
               "type": "expression_statement",
               "expression": {
                 "type": "assignment_expression",
                 "operator": "=",
                 "left": {
                   "type": "identifier",
-                  "name": "b"
+                  "name": "y"
                 },
                 "right": {
-                  "type": "float_literal",
-                  "value": 3.2
+                  "type": "binary_expression",
+                  "operator": "+",
+                  "left": {
+                    "type": "identifier",
+                    "name": "a"
+                  },
+                  "right": {
+                    "type": "integer_literal",
+                    "value": 3
+                  }
                 }
               }
+            }
+          ],
+          "else_branch": [
+            {
+              "type": "if_statement",
+              "condition": {
+                "type": "binary_expression",
+                "operator": "&&",
+                "left": {
+                  "type": "binary_expression",
+                  "operator": ">",
+                  "left": {
+                    "type": "integer_literal",
+                    "value": 4
+                  },
+                  "right": {
+                    "type": "integer_literal",
+                    "value": 2
+                  }
+                },
+                "right": {
+                  "type": "identifier",
+                  "name": "true"
+                }
+              },
+              "then_branch": [
+                {
+                  "type": "expression_statement",
+                  "expression": {
+                    "type": "assignment_expression",
+                    "operator": "=",
+                    "left": {
+                      "type": "identifier",
+                      "name": "b"
+                    },
+                    "right": {
+                      "type": "float_literal",
+                      "value": 3.2
+                    }
+                  }
+                }
+              ],
+              "else_branch": [
+                {
+                  "type": "expression_statement",
+                  "expression": {
+                    "type": "assignment_expression",
+                    "operator": "=",
+                    "left": {
+                      "type": "identifier",
+                      "name": "b"
+                    },
+                    "right": {
+                      "type": "float_literal",
+                      "value": 5.0
+                    }
+                  }
+                }
+              ],
+              "line": 18
             },
-            "else_branch": {
+            {
               "type": "expression_statement",
               "expression": {
                 "type": "assignment_expression",
                 "operator": "=",
                 "left": {
                   "type": "identifier",
-                  "name": "b"
+                  "name": "y"
                 },
                 "right": {
-                  "type": "float_literal",
-                  "value": 5.0
+                  "type": "binary_expression",
+                  "operator": "+",
+                  "left": {
+                    "type": "identifier",
+                    "name": "y"
+                  },
+                  "right": {
+                    "type": "integer_literal",
+                    "value": 1
+                  }
                 }
               }
             }
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "assignment_expression",
-            "operator": "=",
-            "left": {
-              "type": "identifier",
-              "name": "y"
-            },
-            "right": {
-              "type": "binary_expression",
-              "operator": "+",
-              "left": {
-                "type": "identifier",
-                "name": "y"
-              },
-              "right": {
-                "type": "integer_literal",
-                "value": 1
-              }
-            }
-          }
+          ],
+          "line": 15
         },
         {
           "type": "expression_statement",
@@ -563,153 +573,151 @@
           }
         },
         {
-          "type": "do_while_statement",
-          "body": {
-            "type": "expression_statement",
-            "expression": {
-              "type": "assignment_expression",
-              "operator": "=",
-              "left": {
-                "type": "identifier",
-                "name": "y"
-              },
-              "right": {
-                "type": "binary_expression",
-                "operator": "+",
+          "type": "do_until_statement",
+          "body": [
+            {
+              "type": "expression_statement",
+              "expression": {
+                "type": "assignment_expression",
+                "operator": "=",
                 "left": {
+                  "type": "identifier",
+                  "name": "y"
+                },
+                "right": {
                   "type": "binary_expression",
-                  "operator": "*",
+                  "operator": "+",
                   "left": {
                     "type": "binary_expression",
-                    "operator": "+",
+                    "operator": "*",
+                    "left": {
+                      "type": "binary_expression",
+                      "operator": "+",
+                      "left": {
+                        "type": "identifier",
+                        "name": "y"
+                      },
+                      "right": {
+                        "type": "integer_literal",
+                        "value": 1
+                      }
+                    },
+                    "right": {
+                      "type": "integer_literal",
+                      "value": 2
+                    }
+                  },
+                  "right": {
+                    "type": "integer_literal",
+                    "value": 1
+                  }
+                }
+              }
+            },
+            {
+              "type": "while_statement",
+              "condition": {
+                "type": "binary_expression",
+                "operator": ">",
+                "left": {
+                  "type": "identifier",
+                  "name": "x"
+                },
+                "right": {
+                  "type": "integer_literal",
+                  "value": 7
+                }
+              },
+              "body": [
+                {
+                  "type": "expression_statement",
+                  "expression": {
+                    "type": "assignment_expression",
+                    "operator": "=",
                     "left": {
                       "type": "identifier",
-                      "name": "y"
+                      "name": "x"
                     },
                     "right": {
-                      "type": "integer_literal",
-                      "value": 1
+                      "type": "binary_expression",
+                      "operator": "+",
+                      "left": {
+                        "type": "integer_literal",
+                        "value": 6
+                      },
+                      "right": {
+                        "type": "binary_expression",
+                        "operator": "/",
+                        "left": {
+                          "type": "binary_expression",
+                          "operator": "*",
+                          "left": {
+                            "type": "binary_expression",
+                            "operator": "/",
+                            "left": {
+                              "type": "integer_literal",
+                              "value": 8
+                            },
+                            "right": {
+                              "type": "integer_literal",
+                              "value": 9
+                            }
+                          },
+                          "right": {
+                            "type": "integer_literal",
+                            "value": 8
+                          }
+                        },
+                        "right": {
+                          "type": "integer_literal",
+                          "value": 3
+                        }
+                      }
                     }
-                  },
-                  "right": {
-                    "type": "integer_literal",
-                    "value": 2
                   }
                 },
-                "right": {
-                  "type": "integer_literal",
-                  "value": 1
-                }
-              }
-            }
-          },
-          "condition": {
-            "type": "binary_expression",
-            "operator": ">",
-            "left": {
-              "type": "identifier",
-              "name": "x"
-            },
-            "right": {
-              "type": "integer_literal",
-              "value": 7
-            }
-          },
-          "line": 28
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "assignment_expression",
-            "operator": "=",
-            "left": {
-              "type": "identifier",
-              "name": "x"
-            },
-            "right": {
-              "type": "binary_expression",
-              "operator": "+",
-              "left": {
-                "type": "integer_literal",
-                "value": 6
-              },
-              "right": {
-                "type": "binary_expression",
-                "operator": "/",
-                "left": {
-                  "type": "binary_expression",
-                  "operator": "*",
-                  "left": {
-                    "type": "binary_expression",
-                    "operator": "/",
+                {
+                  "type": "expression_statement",
+                  "expression": {
+                    "type": "identifier",
+                    "name": "cin"
+                  }
+                },
+                {
+                  "type": "expression_statement",
+                  "expression": {
+                    "type": "identifier",
+                    "name": "x"
+                  }
+                },
+                {
+                  "type": "expression_statement",
+                  "expression": {
+                    "type": "assignment_expression",
+                    "operator": "=",
                     "left": {
-                      "type": "integer_literal",
-                      "value": 8
+                      "type": "identifier",
+                      "name": "mas"
                     },
                     "right": {
-                      "type": "integer_literal",
-                      "value": 9
+                      "type": "binary_expression",
+                      "operator": "/",
+                      "left": {
+                        "type": "integer_literal",
+                        "value": 36
+                      },
+                      "right": {
+                        "type": "integer_literal",
+                        "value": 7
+                      }
                     }
-                  },
-                  "right": {
-                    "type": "integer_literal",
-                    "value": 8
                   }
-                },
-                "right": {
-                  "type": "integer_literal",
-                  "value": 3
                 }
-              }
+              ],
+              "line": 30
             }
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "identifier",
-            "name": "cin"
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "error"
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "identifier",
-            "name": "x"
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "assignment_expression",
-            "operator": "=",
-            "left": {
-              "type": "identifier",
-              "name": "mas"
-            },
-            "right": {
-              "type": "binary_expression",
-              "operator": "/",
-              "left": {
-                "type": "integer_literal",
-                "value": 36
-              },
-              "right": {
-                "type": "integer_literal",
-                "value": 7
-              }
-            }
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
+          ],
+          "condition": {
             "type": "binary_expression",
             "operator": "==",
             "left": {
@@ -720,7 +728,8 @@
               "type": "integer_literal",
               "value": 5
             }
-          }
+          },
+          "line": 28
         },
         {
           "type": "while_statement",
@@ -736,46 +745,37 @@
               "value": 0
             }
           },
-          "body": {
-            "type": "expression_statement",
-            "expression": {
-              "type": "identifier",
-              "name": "cin"
+          "body": [
+            {
+              "type": "expression_statement",
+              "expression": {
+                "type": "identifier",
+                "name": "cin"
+              }
+            },
+            {
+              "type": "expression_statement",
+              "expression": {
+                "type": "identifier",
+                "name": "mas"
+              }
+            },
+            {
+              "type": "expression_statement",
+              "expression": {
+                "type": "identifier",
+                "name": "cout"
+              }
+            },
+            {
+              "type": "expression_statement",
+              "expression": {
+                "type": "identifier",
+                "name": "x"
+              }
             }
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "error"
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "identifier",
-            "name": "mas"
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "identifier",
-            "name": "cout"
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "error"
-          }
-        },
-        {
-          "type": "expression_statement",
-          "expression": {
-            "type": "identifier",
-            "name": "x"
-          }
+          ],
+          "line": 36
         }
       ]
     }

@@ -16,7 +16,7 @@ KEYWORDS = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", 
     "else", "enum", "extern", "float", "for", "goto", "if", "int", "long", "register", 
     "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef", 
-    "union", "unsigned", "void", "volatile", "while", "do"
+    "union", "unsigned", "void", "volatile", "while", "do", "until", "then", "end"
 }
 
 OPERATORS = {
@@ -192,7 +192,7 @@ def lex(code):
     return tokens, errors
 
 class Parser:
-    INVALID_KEYWORDS = {'end', 'until', 'then'}  # Add other non-C keywords here
+    INVALID_KEYWORDS=()
     def __init__(self, tokens, errors):
         self.tokens = tokens
         self.errors = errors
@@ -261,10 +261,6 @@ class Parser:
                 self.advance()
                 return
             elif self.current_token['token_type'] == 'SYMBOL' and self.current_token['lexeme'] in ['{', '}']:
-                return
-            # Add check for invalid keywords
-            elif self.current_token['lexeme'] in self.INVALID_KEYWORDS:
-                self.advance()
                 return
             elif self.current_token['token_type'] == 'KEYWORD' and self.current_token['lexeme'] in ['if', 'while', 'for', 'return', 'int', 'float', 'char', 'void']:
                 return
@@ -406,22 +402,14 @@ class Parser:
     
     def parse_statement(self):
         if not self.current_token:
-            return None
-
-        if self.current_token['token_type'] == 'ID' and self.current_token['lexeme'] in self.INVALID_KEYWORDS:
-            lexeme = self.current_token['lexeme']
-            self.add_error(f"Invalid keyword: '{lexeme}'")
-            self.advance()
-            return None
-            
+            return None            
         if self.current_token['token_type'] == 'SYMBOL' and self.current_token['lexeme'] == '{':
-            # Don't advance here, let parse_compound_statement handle it
             return self.parse_compound_statement()
         elif self.current_token['token_type'] == 'KEYWORD':
             if self.current_token['lexeme'] == 'if':
                 return self.parse_if_statement()
-            elif self.current_token['lexeme'] == 'do':  # Add this
-                return self.parse_do_while_statement()  # Add this
+            elif self.current_token['lexeme'] == 'do':
+                return self.parse_do_until_statement()
             elif self.current_token['lexeme'] == 'while':
                 return self.parse_while_statement()
             elif self.current_token['lexeme'] == 'for':
@@ -430,87 +418,102 @@ class Parser:
                 return self.parse_return_statement()
             elif self.current_token['lexeme'] in ['int', 'float', 'char', 'void']:
                 return self.parse_declaration()
+            # Add until keyword handling
+            elif self.current_token['lexeme'] == 'until':
+                self.add_error("'until' can only appear after a 'do' block")
+                self.advance()
+                return None
             else:
-                # Skip unknown keywords and try to continue
                 self.add_error(f"Unexpected keyword '{self.current_token['lexeme']}'")
                 self.advance()
                 return None
         else:
             return self.parse_expression_statement()
 
-    def parse_do_while_statement(self):
+    def parse_do_until_statement(self):
         start_line = self.current_token['line']
         self.advance()  # consume 'do'
         
-        # Parse the body (statement or compound statement)
-        body = self.parse_statement()
+        # Parse body until 'until'
+        body = []
+        while self.current_token and self.current_token['lexeme'] != 'until':
+            stmt = self.parse_statement()
+            if stmt:
+                body.append(stmt)
         
-        # Expect 'while' keyword after body
-        self.consume('KEYWORD', 'while', "Expected 'while' after do-while body")
-        
-        # Parse condition in parentheses
-        self.consume('SYMBOL', '(', "Expected '(' after 'while'")
+        self.consume('KEYWORD', 'until', "Expected 'until' after do body")  # Handle 'until'
         condition = self.parse_expression()
-        self.consume('SYMBOL', ')', "Expected ')' after condition")
-        
-        # Consume the terminating semicolon
-        self.consume('SYMBOL', ';', "Expected ';' after do-while condition")
         
         return {
-            "type": "do_while_statement",
+            "type": "do_until_statement",
             "body": body,
             "condition": condition,
             "line": start_line
         }
     
     def parse_if_statement(self):
+        start_line = self.current_token['line']
         self.advance()  # consume 'if'
         
-        # Check for C-style condition with parentheses
-        has_parens = self.match('SYMBOL', '(')
         condition = self.parse_expression()
-        if has_parens:
-            self.consume('SYMBOL', ')', "Expected ')' after condition")
+        self.consume('KEYWORD', 'then', "Expected 'then' after condition")  # Handle 'then'
         
-        # Skip non-C keywords like 'then'
-        if self.current_token and self.current_token['lexeme'] == 'then':
-            self.add_error("C syntax doesn't use 'then' keyword")
-            self.advance()
+        # Parse then body until 'else' or 'end'
+        then_body = []
+        while self.current_token and self.current_token['lexeme'] not in ['else', 'end']:
+            stmt = self.parse_statement()
+            if stmt:
+                then_body.append(stmt)
         
-        then_branch = self.parse_statement()
-        else_branch = None
+        # Parse else branch if present
+        else_body = None
+        if self.match('KEYWORD', 'else'):
+            else_body = []
+            while self.current_token and self.current_token['lexeme'] != 'end':
+                stmt = self.parse_statement()
+                if stmt:
+                    else_body.append(stmt)
         
-        # Skip 'else' if present
-        if self.current_token and self.current_token['token_type'] == 'KEYWORD' and self.current_token['lexeme'] == 'else':
-            self.advance()
-            else_branch = self.parse_statement()
+        self.consume('KEYWORD', 'end', "Expected 'end' after if statement")  # Handle 'end'
         
-        # Skip non-C keywords like 'end'
-        if self.current_token and self.current_token['lexeme'] == 'end':
-            self.add_error("C syntax doesn't use 'end' keyword")
-            self.advance()
-            
         return {
             "type": "if_statement",
             "condition": condition,
-            "then_branch": then_branch,
-            "else_branch": else_branch
+            "then_branch": then_body,
+            "else_branch": else_body,
+            "line": start_line
         }
-    
+
+    def parse_block(self):
+        """Parse a block of statements until 'end' is encountered"""
+        statements = []
+        while self.current_token and self.current_token['lexeme'] != 'end':
+            stmt = self.parse_statement()
+            if stmt:
+                statements.append(stmt)
+        self.consume('KEYWORD', 'end', "Expected 'end' after block")
+        return {"type": "block", "body": statements}
+
     def parse_while_statement(self):
+        start_line = self.current_token['line']
         self.advance()  # consume 'while'
         
-        has_parens = self.match('SYMBOL', '(')
         condition = self.parse_expression()
-        if has_parens:
-            self.consume('SYMBOL', ')', "Expected ')' after condition")
         
-        body = self.parse_statement()
+        # Parse body until 'end'
+        body = []
+        while self.current_token and self.current_token['lexeme'] != 'end':
+            stmt = self.parse_statement()
+            if stmt:
+                body.append(stmt)
+        
+        self.consume('KEYWORD', 'end', "Expected 'end' after while body")  # Handle 'end'
         
         return {
             "type": "while_statement",
             "condition": condition,
-            "body": body
+            "body": body,
+            "line": start_line
         }
     
     def parse_for_statement(self):

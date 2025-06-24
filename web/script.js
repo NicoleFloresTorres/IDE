@@ -138,14 +138,14 @@ document.addEventListener('DOMContentLoaded', function () {
             case 'postfix_expression':
                 tipo = 'Expresión Postfija';
                 nombre = node.operator;
-            case 'do_while_statement':
-                tipo = 'Bucle Do-While';
+            case 'do_until_statement':
+                tipo = 'Bucle Do-Until';
                 break;
-            case 'do_while_body':
-                tipo = 'Cuerpo';
+            case 'do_until_body':
+                tipo = 'Cuerpo Do-Until';
                 break;
-            case 'do_while_condition':
-                tipo = 'Condición';
+            case 'do_until_condition':
+                tipo = 'Condición Do-Until';
                 break;
             case 'binary_expression':
                 tipo = 'Expresión Binaria';
@@ -164,7 +164,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Create child container first to determine if we have children
         const childContainer = document.createElement('ul');
-        childContainer.style.display = 'none';
+        childContainer.style.display = 'block';
         childContainer.style.listStyle = 'none';
         childContainer.style.margin = '0';
         childContainer.style.padding = '0';
@@ -182,9 +182,13 @@ document.addEventListener('DOMContentLoaded', function () {
             const condWrapper = { type: 'condition', expression: node.condition };
             renderAST(condWrapper, childContainer, depth + 1);
 
-            const thenWrapper = { type: 'then_branch', body: node.then_branch };
-            renderAST(thenWrapper, childContainer, depth + 1);
+            // Handle then_branch (array of nodes)
+            if (node.then_branch) {
+                const thenWrapper = { type: 'then_branch', body: node.then_branch };
+                renderAST(thenWrapper, childContainer, depth + 1);
+            }
 
+            // Handle else_branch (array of nodes)
             if (node.else_branch) {
                 const elseWrapper = { type: 'else_branch', body: node.else_branch };
                 renderAST(elseWrapper, childContainer, depth + 1);
@@ -196,11 +200,23 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (node.type === 'then_branch' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    renderAST(child, childContainer, depth + 1);
+                });
+            } else {
+                renderAST(node.body, childContainer, depth + 1);
+            }
         }
 
         if (node.type === 'else_branch' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    renderAST(child, childContainer, depth + 1);
+                });
+            } else {
+                renderAST(node.body, childContainer, depth + 1);
+            }
         }
 
         if (node.type === 'call_expression' && node.arguments) {
@@ -212,9 +228,22 @@ document.addEventListener('DOMContentLoaded', function () {
         if (node.type === 'function_definition') {
             renderAST(node.body, childContainer, depth + 1);
         }
-
+        // In the compound_statement section
         if (node.type === 'compound_statement') {
-            node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    // Handle expression_statements
+                    if (child.type === 'expression_statement' && child.expression) {
+                        renderAST(child.expression, childContainer, depth + 1);
+                    } else {
+                        renderAST(child, childContainer, depth + 1);
+                    }
+                });
+            }
+            // Handle single statement bodies
+            else if (node.body && typeof node.body === 'object') {
+                renderAST(node.body, childContainer, depth + 1);
+            }
         }
 
         if (node.type === 'declaration') {
@@ -242,7 +271,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 leftLabel.style.color = 'var(--primary-purple)';
                 childContainer.appendChild(leftLabel);
                 renderAST(node.left, childContainer, depth + 1);
-                
+
                 const rightLabel = document.createElement('div');
                 rightLabel.textContent = `Operando Derecho`;
                 rightLabel.style.fontWeight = 'bold';
@@ -290,8 +319,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 renderAST(condWrapper, childContainer, depth + 1);
             }
 
-            // Cuerpo
+            // Cuerpo - Handle body correctly whether it's array or single node
             if (node.body) {
+                // Create body wrapper
                 const bodyWrapper = { type: 'while_body', body: node.body };
                 renderAST(bodyWrapper, childContainer, depth + 1);
             }
@@ -309,7 +339,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         if (node.type === 'for_body' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
+            // Wrap the body in a compound_statement if it's not already one
+            const bodyNode = node.body.type === 'compound_statement'
+                ? node.body
+                : { type: 'compound_statement', body: [node.body] };
+
+            renderAST(bodyNode, childContainer, depth + 1);
         }
 
         // Procesar los wrappers creados para las partes del while
@@ -317,8 +352,25 @@ document.addEventListener('DOMContentLoaded', function () {
             renderAST(node.expression, childContainer, depth + 1);
         }
 
+        if (node.type === 'for_body' && node.body) {
+            // Wrap the body in a compound_statement if it's not already one
+            const bodyNode = node.body.type === 'compound_statement'
+                ? node.body
+                : { type: 'compound_statement', body: [node.body] };
+
+            renderAST(bodyNode, childContainer, depth + 1);
+        }
+
+
         if (node.type === 'while_body' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
+            // Process body directly without wrapping in compound_statement
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    renderAST(child, childContainer, depth + 1);
+                });
+            } else {
+                renderAST(node.body, childContainer, depth + 1);
+            }
         }
 
         // Procesar expresiones postfijas
@@ -326,30 +378,38 @@ document.addEventListener('DOMContentLoaded', function () {
             renderAST(node.operand, childContainer, depth + 1);
         }
 
-        if (node.type === 'do_while_statement') {
-            // Body
+        // Process do-until statements
+        if (node.type === 'do_until_statement') {
             if (node.body) {
-                const bodyWrapper = { type: 'do_while_body', body: node.body };
+                const bodyWrapper = { type: 'do_until_body', body: node.body };
                 renderAST(bodyWrapper, childContainer, depth + 1);
             }
-
-            // Condition
             if (node.condition) {
-                const condWrapper = { type: 'do_while_condition', expression: node.condition };
+                const condWrapper = {
+                    type: 'do_until_condition',
+                    expression: node.condition
+                };
                 renderAST(condWrapper, childContainer, depth + 1);
             }
         }
 
-        if (node.type === 'do_while_body' && node.body) {
-            renderAST(node.body, childContainer, depth + 1);
+        // Process do-until body
+        if (node.type === 'do_until_body' && node.body) {
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    renderAST(child, childContainer, depth + 1);
+                });
+            } else {
+                renderAST(node.body, childContainer, depth + 1);
+            }
         }
 
-        // Process do-while condition
-        if (node.type === 'do_while_condition' && node.expression) {
+        // Process do-until condition
+        if (node.type === 'do_until_condition' && node.expression) {
             renderAST(node.expression, childContainer, depth + 1);
         }
 
-        
+
 
         const ul = document.createElement('ul');
         ul.style.listStyle = 'none';
@@ -368,10 +428,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (hasChildren) {
             const toggle = document.createElement('span');
-            toggle.textContent = '▶ ';
-            toggle.style.cursor = 'pointer';
-            toggle.style.userSelect = 'none';
-            toggle.style.marginRight = '0.3rem';
+            // Cambiar el símbolo inicial a ▼ (expandido)
+            toggle.textContent = '▼ ';
 
             toggle.addEventListener('click', () => {
                 const visible = childContainer.style.display === 'block';
@@ -459,6 +517,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const container = document.getElementById('sintacticoContent');
             container.innerHTML = '';
             displaySyntaxErrors([]); // Clear previous errors
+
 
             // Handle analysis results
             // ALWAYS display AST if present in response

@@ -108,7 +108,7 @@ KEYWORD if Linea:15 Col:5
 INTEGER 2 Linea:15 Col:8
 OP > Linea:15 Col:9
 INTEGER 3 Linea:15 Col:10
-ID then Linea:15 Col:12
+KEYWORD then Linea:15 Col:12
 ID y Linea:16 Col:9
 OP = Linea:16 Col:11
 ID a Linea:16 Col:13
@@ -122,7 +122,7 @@ OP > Linea:18 Col:13
 INTEGER 2 Linea:18 Col:14
 OP && Linea:18 Col:16
 ID true Linea:18 Col:19
-ID then Linea:18 Col:24
+KEYWORD then Linea:18 Col:24
 ID b Linea:19 Col:13
 OP = Linea:19 Col:15
 FLOAT 3.2 Linea:19 Col:17
@@ -132,14 +132,14 @@ ID b Linea:21 Col:13
 OP = Linea:21 Col:15
 FLOAT 5.0 Linea:21 Col:17
 SYMBOL ; Linea:21 Col:20
-ID end Linea:22 Col:9
+KEYWORD end Linea:22 Col:9
 ID y Linea:23 Col:9
 OP = Linea:23 Col:11
 ID y Linea:23 Col:13
 OP + Linea:23 Col:15
 INTEGER 1 Linea:23 Col:17
 SYMBOL ; Linea:23 Col:18
-ID end Linea:24 Col:5
+KEYWORD end Linea:24 Col:5
 ID a Linea:25 Col:5
 OP ++ Linea:25 Col:6
 SYMBOL ; Linea:25 Col:8
@@ -191,8 +191,8 @@ INTEGER 36 Linea:33 Col:19
 OP / Linea:33 Col:22
 INTEGER 7 Linea:33 Col:24
 SYMBOL ; Linea:33 Col:25
-ID end Linea:34 Col:9
-ID until Linea:35 Col:5
+KEYWORD end Linea:34 Col:9
+KEYWORD until Linea:35 Col:5
 ID y Linea:35 Col:11
 OP == Linea:35 Col:13
 INTEGER 5 Linea:35 Col:16
@@ -208,5 +208,5 @@ ID cout Linea:38 Col:9
 OP << Linea:38 Col:14
 ID x Linea:38 Col:17
 SYMBOL ; Linea:38 Col:18
-ID end Linea:39 Col:5
+KEYWORD end Linea:39 Col:5
 SYMBOL } Linea:40 Col:1
