@@ -45,7 +45,7 @@
         <a href="#" class="btn" id="closeAppBtn">Close App</a>
         <!-- Additional buttons -->
         <a href="#" class="btn" id="lexicoBtn">Lexico</a>
-        <a href="#" class="btn" id="sintacticoBtn"">Sintactico</a>
+        <a href="#" class="btn" id="sintacticoBtn">Sintactico</a>
         <a href="#" class="btn">Semantico</a>
         <a href="#" class="btn">Compilar</a>
     </div>
@@ -78,8 +78,15 @@
                 </div>
                 <div class="tab-content" id="sintactico">
                     <h2>Análisis Sintáctico</h2>
-                    <div class="textarea" id="sintacticoContent" style="overflow: auto; max-height: 400px;"></div>
-                    <div id="sintacticoContent" style="overflow: auto;"></div>
+                    <div class="ast-controls">
+                        <button class="ast-btn" id="expandAllBtn">
+                            <i class="fas fa-expand"></i> Expandir Todo
+                        </button>
+                        <button class="ast-btn" id="collapseAllBtn">
+                            <i class="fas fa-compress"></i> Colapsar Todo
+                        </button>
+                    </div>
+                    <div class="ast-container" id="astTree"></div>
                 </div>
                 <div class="tab-content" id="semantico">
                     <h2>Análisis Semántico</h2>
@@ -132,6 +139,15 @@
                 </div>
             </div>
         </div>
+    </div>
+
+    <!-- Context Menu for AST Nodes -->
+    <div class="context-menu" id="contextMenu">
+        <ul>
+            <li id="expandChildren"><i class="fas fa-plus-square"></i> Expandir Hijos</li>
+            <li id="collapseChildren"><i class="fas fa-minus-square"></i> Colapsar Hijos</li>
+            <li id="expandAllChildren"><i class="fas fa-expand-arrows-alt"></i> Expandir Todos los Descendientes</li>
+        </ul>
     </div>
     <script src="script.js"></script>
 </body>
