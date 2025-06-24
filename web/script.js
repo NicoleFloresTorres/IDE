@@ -39,6 +39,428 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
+    let contadorNodo = 1;
+
+    function renderAST(node, container, depth = 0) {
+        if (!node || typeof node !== 'object') return;
+
+        // Ocultar nodos tipo expression_statement
+        if (node.type === 'expression_statement' && node.expression) {
+            renderAST(node.expression, container, depth);
+            return;
+        }
+
+        let tipo = node.type || 'Nodo';
+        let nombre = '';
+
+        switch (tipo) {
+            case 'program':
+                tipo = 'Programa';
+                break;
+            case 'starting_point':
+                tipo = 'Punto de Inicio';
+                break;
+            case 'function_definition':
+                tipo = 'Bloque Principal';
+                nombre = node.name;
+                break;
+            case 'compound_statement':
+                tipo = 'Bloque';
+                break;
+            case 'declaration':
+                tipo = 'Declaración';
+                nombre = node.data_type;
+                break;
+            case 'assignment_expression':
+                tipo = 'Asignación';
+                nombre = node.left?.name || '';
+                break;
+            case 'call_expression':
+                tipo = 'Llamada a función';
+                nombre = node.callee;
+                break;
+            case 'string_literal':
+                tipo = 'Cadena';
+                nombre = node.value;
+                break;
+            case 'if_statement':
+                tipo = 'Sentencia If';
+                break;
+            case 'condition':
+                tipo = 'Condición';
+                break;
+            case 'then_branch':
+                tipo = 'Then';
+                break;
+            case 'else_branch':
+                tipo = 'Else';
+                break;
+            case 'identifier':
+                tipo = 'Variable';
+                nombre = node.name;
+                break;
+            case 'integer_literal':
+                tipo = 'Número Entero';
+                nombre = node.value;
+                break;
+            case 'float_literal':
+                tipo = 'Número Decimal';
+                nombre = node.value;
+                break;
+            case 'binary_expression':
+                tipo = 'Expresión Binaria';
+                nombre = node.operator;
+                break;
+            case 'for_statement':
+                tipo = 'Bucle For';
+                break;
+            case 'while_statement':
+                tipo = 'Bucle While';
+                break;
+            case 'for_init':
+                tipo = 'Inicialización For';
+                break;
+            case 'for_condition':
+                tipo = 'Condición For';
+                break;
+            case 'for_update':
+                tipo = 'Actualización For';
+                break;
+            case 'for_body':
+                tipo = 'Cuerpo For';
+                break;
+            case 'while_condition':
+                tipo = 'Condición While';
+                break;
+            case 'while_body':
+                tipo = 'Cuerpo While';
+                break;
+            case 'postfix_expression':
+                tipo = 'Expresión Postfija';
+                nombre = node.operator;
+            case 'do_until_statement':
+                tipo = 'Bucle Do-Until';
+                break;
+            case 'do_until_body':
+                tipo = 'Cuerpo Do-Until';
+                break;
+            case 'do_until_condition':
+                tipo = 'Condición Do-Until';
+                break;
+            case 'binary_expression':
+                tipo = 'Expresión Binaria';
+                nombre = node.operator;
+                // Add support for shift operators
+                if (node.operator === '<<' || node.operator === '>>') {
+                    tipo = 'Operador de Desplazamiento';
+                    nombre = node.operator;
+                }
+                break;
+            default:
+                tipo = 'Nodo';
+        }
+
+        const displayText = `[${contadorNodo++}] ${tipo}${nombre != null ? ` (${nombre})` : ''}`;
+
+        // Create child container first to determine if we have children
+        const childContainer = document.createElement('ul');
+        childContainer.style.display = 'block';
+        childContainer.style.listStyle = 'none';
+        childContainer.style.margin = '0';
+        childContainer.style.padding = '0';
+
+        // Process children first to determine if node is expandable
+        if (node.type === 'program') {
+            node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+        }
+
+        if (node.type === 'starting_point') {
+            node.body?.forEach(child => renderAST(child, childContainer, depth + 1));
+        }
+
+        if (node.type === 'if_statement') {
+            const condWrapper = { type: 'condition', expression: node.condition };
+            renderAST(condWrapper, childContainer, depth + 1);
+
+            // Handle then_branch (array of nodes)
+            if (node.then_branch) {
+                const thenWrapper = { type: 'then_branch', body: node.then_branch };
+                renderAST(thenWrapper, childContainer, depth + 1);
+            }
+
+            // Handle else_branch (array of nodes)
+            if (node.else_branch) {
+                const elseWrapper = { type: 'else_branch', body: node.else_branch };
+                renderAST(elseWrapper, childContainer, depth + 1);
+            }
+        }
+
+        if (node.type === 'condition' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'then_branch' && node.body) {
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    renderAST(child, childContainer, depth + 1);
+                });
+            } else {
+                renderAST(node.body, childContainer, depth + 1);
+            }
+        }
+
+        if (node.type === 'else_branch' && node.body) {
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    renderAST(child, childContainer, depth + 1);
+                });
+            } else {
+                renderAST(node.body, childContainer, depth + 1);
+            }
+        }
+
+        if (node.type === 'call_expression' && node.arguments) {
+            node.arguments.forEach(arg => {
+                renderAST(arg, childContainer, depth + 1);
+            });
+        }
+
+        if (node.type === 'function_definition') {
+            renderAST(node.body, childContainer, depth + 1);
+        }
+        // In the compound_statement section
+        if (node.type === 'compound_statement') {
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    // Handle expression_statements
+                    if (child.type === 'expression_statement' && child.expression) {
+                        renderAST(child.expression, childContainer, depth + 1);
+                    } else {
+                        renderAST(child, childContainer, depth + 1);
+                    }
+                });
+            }
+            // Handle single statement bodies
+            else if (node.body && typeof node.body === 'object') {
+                renderAST(node.body, childContainer, depth + 1);
+            }
+        }
+
+        if (node.type === 'declaration') {
+            node.declarations?.forEach(variable => {
+                const varLi = document.createElement('li');
+                varLi.textContent = `[${contadorNodo++}] Variable (${variable.name})`;
+                varLi.style.marginLeft = `${(depth + 1) * 1.5}rem`;
+                varLi.style.fontFamily = 'monospace';
+                childContainer.appendChild(varLi);
+            });
+        }
+
+        if (node.type === 'assignment_expression') {
+            if (node.right) {
+                renderAST(node.right, childContainer, depth + 1);
+            }
+        }
+
+        if (node.type === 'binary_expression') {
+            // Add special handling for shift operators
+            if (node.operator === '<<' || node.operator === '>>') {
+                const leftLabel = document.createElement('div');
+                leftLabel.textContent = `Operando Izquierdo`;
+                leftLabel.style.fontWeight = 'bold';
+                leftLabel.style.color = 'var(--primary-purple)';
+                childContainer.appendChild(leftLabel);
+                renderAST(node.left, childContainer, depth + 1);
+
+                const rightLabel = document.createElement('div');
+                rightLabel.textContent = `Operando Derecho`;
+                rightLabel.style.fontWeight = 'bold';
+                rightLabel.style.color = 'var(--primary-purple)';
+                childContainer.appendChild(rightLabel);
+                renderAST(node.right, childContainer, depth + 1);
+            } else {
+                // Regular binary expression handling
+                if (node.left) renderAST(node.left, childContainer, depth + 1);
+                if (node.right) renderAST(node.right, childContainer, depth + 1);
+            }
+        }
+
+        if (node.type === 'for_statement') {
+            // Inicialización
+            if (node.init) {
+                const initWrapper = { type: 'for_init', expression: node.init };
+                renderAST(initWrapper, childContainer, depth + 1);
+            }
+
+            // Condición
+            if (node.condition) {
+                const condWrapper = { type: 'for_condition', expression: node.condition };
+                renderAST(condWrapper, childContainer, depth + 1);
+            }
+
+            // Actualización
+            if (node.update) {
+                const updateWrapper = { type: 'for_update', expression: node.update };
+                renderAST(updateWrapper, childContainer, depth + 1);
+            }
+
+            // Cuerpo
+            if (node.body) {
+                const bodyWrapper = { type: 'for_body', body: node.body };
+                renderAST(bodyWrapper, childContainer, depth + 1);
+            }
+        }
+
+        // Procesar bucles while
+        if (node.type === 'while_statement') {
+            // Condición
+            if (node.condition) {
+                const condWrapper = { type: 'while_condition', expression: node.condition };
+                renderAST(condWrapper, childContainer, depth + 1);
+            }
+
+            // Cuerpo - Handle body correctly whether it's array or single node
+            if (node.body) {
+                // Create body wrapper
+                const bodyWrapper = { type: 'while_body', body: node.body };
+                renderAST(bodyWrapper, childContainer, depth + 1);
+            }
+        }
+        if (node.type === 'for_init' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'for_condition' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'for_update' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'for_body' && node.body) {
+            // Wrap the body in a compound_statement if it's not already one
+            const bodyNode = node.body.type === 'compound_statement'
+                ? node.body
+                : { type: 'compound_statement', body: [node.body] };
+
+            renderAST(bodyNode, childContainer, depth + 1);
+        }
+
+        // Procesar los wrappers creados para las partes del while
+        if (node.type === 'while_condition' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+        if (node.type === 'for_body' && node.body) {
+            // Wrap the body in a compound_statement if it's not already one
+            const bodyNode = node.body.type === 'compound_statement'
+                ? node.body
+                : { type: 'compound_statement', body: [node.body] };
+
+            renderAST(bodyNode, childContainer, depth + 1);
+        }
+
+
+        if (node.type === 'while_body' && node.body) {
+            // Process body directly without wrapping in compound_statement
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    renderAST(child, childContainer, depth + 1);
+                });
+            } else {
+                renderAST(node.body, childContainer, depth + 1);
+            }
+        }
+
+        // Procesar expresiones postfijas
+        if (node.type === 'postfix_expression' && node.operand) {
+            renderAST(node.operand, childContainer, depth + 1);
+        }
+
+        // Process do-until statements
+        if (node.type === 'do_until_statement') {
+            if (node.body) {
+                const bodyWrapper = { type: 'do_until_body', body: node.body };
+                renderAST(bodyWrapper, childContainer, depth + 1);
+            }
+            if (node.condition) {
+                const condWrapper = {
+                    type: 'do_until_condition',
+                    expression: node.condition
+                };
+                renderAST(condWrapper, childContainer, depth + 1);
+            }
+        }
+
+        // Process do-until body
+        if (node.type === 'do_until_body' && node.body) {
+            if (Array.isArray(node.body)) {
+                node.body.forEach(child => {
+                    renderAST(child, childContainer, depth + 1);
+                });
+            } else {
+                renderAST(node.body, childContainer, depth + 1);
+            }
+        }
+
+        // Process do-until condition
+        if (node.type === 'do_until_condition' && node.expression) {
+            renderAST(node.expression, childContainer, depth + 1);
+        }
+
+
+
+        const ul = document.createElement('ul');
+        ul.style.listStyle = 'none';
+        ul.style.paddingLeft = '0.5rem';
+
+        const li = document.createElement('li');
+        li.style.marginLeft = `${depth * 1}rem`;
+
+        const nodeHeader = document.createElement('div');
+        nodeHeader.style.display = 'flex';
+        nodeHeader.style.alignItems = 'center';
+        nodeHeader.style.fontFamily = 'monospace';
+
+        // Only add toggle if node has children
+        const hasChildren = childContainer.childElementCount > 0;
+
+        if (hasChildren) {
+            const toggle = document.createElement('span');
+            // Cambiar el símbolo inicial a ▼ (expandido)
+            toggle.textContent = '▼ ';
+
+            toggle.addEventListener('click', () => {
+                const visible = childContainer.style.display === 'block';
+                childContainer.style.display = visible ? 'none' : 'block';
+                toggle.textContent = visible ? '▶ ' : '▼ ';
+            });
+
+            nodeHeader.appendChild(toggle);
+        } else {
+            // Add spacer to align leaf nodes with parent nodes
+            const spacer = document.createElement('span');
+            spacer.textContent = '  '; // Two spaces for alignment
+            spacer.style.marginRight = '0.3rem';
+            nodeHeader.appendChild(spacer);
+        }
+
+        const label = document.createElement('span');
+        label.textContent = displayText;
+        label.style.fontWeight = 'normal';
+
+        nodeHeader.appendChild(label);
+        li.appendChild(nodeHeader);
+
+        if (hasChildren) {
+            li.appendChild(childContainer);
+        }
+
+        ul.appendChild(li);
+        container.appendChild(ul);
+    }
+
     function displaySyntaxErrors(errors) {
         const erroresContainer = document.getElementById('erroressinContent');
 
@@ -68,246 +490,61 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    // Function to render the AST tree
-    function renderAST(data, container) {
-        container.innerHTML = '';
-        const rootUl = document.createElement('ul');
-        rootUl.className = 'ast-tree';
-        container.appendChild(rootUl);
-
-        const renderNode = (node, parentEl) => {
-            const li = document.createElement('li');
-            li.className = 'expanded';
-
-            const nodeDiv = document.createElement('div');
-            nodeDiv.className = 'tree-node';
-
-            const icon = document.createElement('div');
-            icon.className = 'node-icon';
-            icon.innerHTML = '<i class="fas fa-caret-down"></i>';
-
-            const content = document.createElement('div');
-            content.className = 'node-content';
-
-            const typeSpan = document.createElement('div');
-            typeSpan.className = 'node-type';
-            typeSpan.textContent = node.type;
-
-            content.appendChild(typeSpan);
-
-            // Add properties if available
-            const props = Object.keys(node).filter(key =>
-                key !== 'type' &&
-                key !== 'body' &&
-                key !== 'condition' &&
-                key !== 'then_branch' &&
-                key !== 'else_branch' &&
-                key !== 'left' &&
-                key !== 'right' &&
-                key !== 'expression' &&
-                key !== 'callee' &&
-                key !== 'arguments'
-            );
-
-            if (props.length > 0) {
-                const propsDiv = document.createElement('div');
-                propsDiv.className = 'node-props';
-
-                props.forEach(prop => {
-                    if (node[prop] !== null) {
-                        const propSpan = document.createElement('span');
-                        propSpan.className = 'node-prop';
-
-                        let valueText;
-                        if (Array.isArray(node[prop])) {
-                            // Handle arrays: show item count + preview
-                            valueText = `[${node[prop].length} items]`;
-                        } else if (typeof node[prop] === 'object') {
-                            // Handle objects: show type indication
-                            valueText = '{...}';
-                        } else {
-                            // Handle primitives directly
-                            valueText = node[prop];
-                        }
-
-                        propSpan.textContent = `${prop}: ${valueText}`;
-                        propsDiv.appendChild(propSpan);
-                    }
-                });
-
-                content.appendChild(propsDiv);
-            }
-
-            nodeDiv.appendChild(icon);
-            nodeDiv.appendChild(content);
-            li.appendChild(nodeDiv);
-
-            // Check if this node has children
-            const children = [];
-            const childKeys = ['body', 'condition', 'then_branch', 'else_branch', 'left', 'right', 'expression', 'arguments'];
-
-            childKeys.forEach(key => {
-                if (node[key] !== null && node[key] !== undefined) {
-                    if (Array.isArray(node[key])) {
-                        node[key].forEach(child => {
-                            children.push(child);
-                        });
-                    } else if (typeof node[key] === 'object') {
-                        children.push(node[key]);
-                    }
-                }
-            });
-
-            if (children.length > 0) {
-                const childUl = document.createElement('ul');
-                children.forEach(child => {
-                    renderNode(child, childUl);
-                });
-                li.appendChild(childUl);
-            } else {
-                li.classList.add('leaf');
-                li.classList.remove('expanded');
-            }
-
-            parentEl.appendChild(li);
-
-            // Add event listeners
-            nodeDiv.addEventListener('click', (e) => {
-                e.stopPropagation();
-                if (children.length > 0) {
-                    li.classList.toggle('expanded');
-                    li.classList.toggle('collapsed');
-                }
-            });
-
-            // Add context menu
-            nodeDiv.addEventListener('contextmenu', (e) => {
-                e.preventDefault();
-                const contextMenu = document.getElementById('contextMenu');
-                contextMenu.style.display = 'block';
-                contextMenu.style.left = `${e.pageX}px`;
-                contextMenu.style.top = `${e.pageY}px`;
-
-                // Store the current node
-                contextMenu.currentNode = li;
-
-                // Close the menu when clicking elsewhere
-                const closeMenu = () => {
-                    contextMenu.style.display = 'none';
-                    document.removeEventListener('click', closeMenu);
-                };
-
-                document.addEventListener('click', closeMenu);
-            });
-        };
-
-        renderNode(data.ast, rootUl);
-    }
-
-    // Function to expand all nodes
-    function expandAll() {
-        const nodes = document.querySelectorAll('#astTree li');
-        nodes.forEach(node => {
-            node.classList.add('expanded');
-            node.classList.remove('collapsed');
-        });
-    }
-
-    // Function to collapse all nodes
-    function collapseAll() {
-        const nodes = document.querySelectorAll('#astTree li');
-        nodes.forEach(node => {
-            if (!node.classList.contains('leaf')) {
-                node.classList.remove('expanded');
-                node.classList.add('collapsed');
-            }
-        });
-    }
-
-    // Function to expand children of a specific node
-    function expandChildren(node) {
-        const children = node.querySelectorAll('li');
-        children.forEach(child => {
-            child.classList.add('expanded');
-            child.classList.remove('collapsed');
-        });
-    }
-
-    // Function to collapse children of a specific node
-    function collapseChildren(node) {
-        const children = node.querySelectorAll('li');
-        children.forEach(child => {
-            if (!child.classList.contains('leaf')) {
-                child.classList.remove('expanded');
-                child.classList.add('collapsed');
-            }
-        });
-    }
-
-    // Function to expand all descendants of a node
-    function expandAllDescendants(node) {
-        const descendants = node.querySelectorAll('li');
-        descendants.forEach(descendant => {
-            descendant.classList.add('expanded');
-            descendant.classList.remove('collapsed');
-        });
-    }
-
     document.getElementById('sintacticoBtn').addEventListener('click', async function (event) {
         event.preventDefault();
 
+        // Automatically switch to the Sintáctico tab in the right panel
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        // Remove active class from all tabs and content
+        tabs.forEach(t => t.classList.remove('active'));
+        tabContents.forEach(content => content.classList.remove('active'));
+
+        // Add active class to Sintáctico tab and content
+        const sintacticoTab = document.querySelector('.tab[data-tab="sintactico"]');
+        const sintacticoContent = document.getElementById('sintactico');
+
+        if (sintacticoTab) sintacticoTab.classList.add('active');
+        if (sintacticoContent) sintacticoContent.classList.add('active');
+
         const code = editor.getValue();
-
-        console.log("Código a analizar:", code);
-
         try {
             const syntaxAnalysis = await eel.parse_code(code)();
+            console.log(syntaxAnalysis);
 
-            console.log("Análisis sintáctico:", syntaxAnalysis);
+            // Clear previous AST and errors
+            const container = document.getElementById('sintacticoContent');
+            container.innerHTML = '';
+            displaySyntaxErrors([]); // Clear previous errors
 
-            // Display syntax errors if any
-            displaySyntaxErrors(syntaxAnalysis.errors);
 
-            // Render AST tree if there are no errors
-            renderAST(syntaxAnalysis, document.getElementById('astTree'));
+            // Handle analysis results
+            // ALWAYS display AST if present in response
+            if (syntaxAnalysis.ast) {
+                contadorNodo = 1;
+                renderAST(syntaxAnalysis.ast, container);
+            } else {
+                console.warn("No AST found in response");
+            }
 
-            // Automatically switch to the syntax tab
-            const tab = document.querySelector('.tab[data-tab="sintactico"]');
-            if (tab) tab.click();
-
+            // Display errors if they exist
+            if (syntaxAnalysis.errors && syntaxAnalysis.errors.length > 0) {
+                displaySyntaxErrors(syntaxAnalysis.errors);
+            }
         } catch (error) {
             console.error("Error calling eel.parse_code:", error);
+            // Display error in UI
+            displaySyntaxErrors([{
+                line: 1,
+                column: 1,
+                error_message: `Analysis failed: ${error.message || error}`
+            }]);
         }
     });
 
-    // Add event listeners for AST controls
-    document.getElementById('expandAllBtn').addEventListener('click', expandAll);
-    document.getElementById('collapseAllBtn').addEventListener('click', collapseAll);
 
-    // Context menu event listeners
-    document.getElementById('expandChildren').addEventListener('click', () => {
-        const contextMenu = document.getElementById('contextMenu');
-        if (contextMenu.currentNode) {
-            expandChildren(contextMenu.currentNode);
-            contextMenu.style.display = 'none';
-        }
-    });
 
-    document.getElementById('collapseChildren').addEventListener('click', () => {
-        const contextMenu = document.getElementById('contextMenu');
-        if (contextMenu.currentNode) {
-            collapseChildren(contextMenu.currentNode);
-            contextMenu.style.display = 'none';
-        }
-    });
-
-    document.getElementById('expandAllChildren').addEventListener('click', () => {
-        const contextMenu = document.getElementById('contextMenu');
-        if (contextMenu.currentNode) {
-            expandAllDescendants(contextMenu.currentNode);
-            contextMenu.style.display = 'none';
-        }
-    });
 
     var statusBar = document.createElement("div");
     statusBar.id = "statusBar";
@@ -376,6 +613,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Get lexical analysis from the backend
             const lexicalAnalysis = await eel.lex(fileContent)();
+
+            console.log(lexicalAnalysis);
 
             // Process the lexical analysis data
             processLexicalAnalysis(lexicalAnalysis);
@@ -554,29 +793,29 @@ document.addEventListener('DOMContentLoaded', function () {
     // Add CSS styles for the token table
     const style = document.createElement('style');
     style.textContent = `
-                .token-table {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                
-                .token-table th {
-                    background: var(--primary-purple);
-                    color: white;
-                    padding: 8px;
-                    text-align: left;
-                    position: sticky;
-                    top: 0;
-                    z-index: 10;
-                }
-                
-                .token-table td {
-                    padding: 8px;
-                    border-bottom: 1px solid var(--secondary-lilac);
-                }
-                
-                .token-table tr:nth-child(even) {
-                    background: var(--light-lilac);
-                }
-            `;
+        .token-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .token-table th {
+            background: var(--primary-purple);
+            color: white;
+            padding: 8px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .token-table td {
+            padding: 8px;
+            border-bottom: 1px solid var(--secondary-lilac);
+        }
+        
+        .token-table tr:nth-child(even) {
+            background: var(--light-lilac);
+        }
+    `;
     document.head.appendChild(style);
 });

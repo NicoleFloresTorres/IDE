@@ -16,7 +16,7 @@ KEYWORDS = {
     "auto", "break", "case", "char", "const", "continue", "default", "do", "double", 
     "else", "enum", "extern", "float", "for", "goto", "if", "int", "long", "register", 
     "return", "short", "signed", "sizeof", "static", "struct", "switch", "typedef", 
-    "union", "unsigned", "void", "volatile", "while"
+    "union", "unsigned", "void", "volatile", "while", "do", "until", "then", "end"
 }
 
 OPERATORS = {
@@ -192,6 +192,7 @@ def lex(code):
     return tokens, errors
 
 class Parser:
+    INVALID_KEYWORDS=()
     def __init__(self, tokens, errors):
         self.tokens = tokens
         self.errors = errors
@@ -254,10 +255,10 @@ class Parser:
         self.in_panic_mode = False
         self.error_count = 0
         
-        # Skip tokens until we find a statement boundary
+        # Add invalid keywords to synchronization points
         while self.current_token:
             if self.current_token['token_type'] == 'SYMBOL' and self.current_token['lexeme'] == ';':
-                self.advance()  # consume the semicolon
+                self.advance()
                 return
             elif self.current_token['token_type'] == 'SYMBOL' and self.current_token['lexeme'] in ['{', '}']:
                 return
@@ -401,14 +402,14 @@ class Parser:
     
     def parse_statement(self):
         if not self.current_token:
-            return None
-            
+            return None            
         if self.current_token['token_type'] == 'SYMBOL' and self.current_token['lexeme'] == '{':
-            # Don't advance here, let parse_compound_statement handle it
             return self.parse_compound_statement()
         elif self.current_token['token_type'] == 'KEYWORD':
             if self.current_token['lexeme'] == 'if':
                 return self.parse_if_statement()
+            elif self.current_token['lexeme'] == 'do':
+                return self.parse_do_until_statement()
             elif self.current_token['lexeme'] == 'while':
                 return self.parse_while_statement()
             elif self.current_token['lexeme'] == 'for':
@@ -417,62 +418,102 @@ class Parser:
                 return self.parse_return_statement()
             elif self.current_token['lexeme'] in ['int', 'float', 'char', 'void']:
                 return self.parse_declaration()
+            # Add until keyword handling
+            elif self.current_token['lexeme'] == 'until':
+                self.add_error("'until' can only appear after a 'do' block")
+                self.advance()
+                return None
             else:
-                # Skip unknown keywords and try to continue
                 self.add_error(f"Unexpected keyword '{self.current_token['lexeme']}'")
                 self.advance()
                 return None
         else:
             return self.parse_expression_statement()
+
+    def parse_do_until_statement(self):
+        start_line = self.current_token['line']
+        self.advance()  # consume 'do'
+        
+        # Parse body until 'until'
+        body = []
+        while self.current_token and self.current_token['lexeme'] != 'until':
+            stmt = self.parse_statement()
+            if stmt:
+                body.append(stmt)
+        
+        self.consume('KEYWORD', 'until', "Expected 'until' after do body")  # Handle 'until'
+        condition = self.parse_expression()
+        
+        return {
+            "type": "do_until_statement",
+            "body": body,
+            "condition": condition,
+            "line": start_line
+        }
     
     def parse_if_statement(self):
+        start_line = self.current_token['line']
         self.advance()  # consume 'if'
         
-        # Check for C-style condition with parentheses
-        has_parens = self.match('SYMBOL', '(')
         condition = self.parse_expression()
-        if has_parens:
-            self.consume('SYMBOL', ')', "Expected ')' after condition")
+        self.consume('KEYWORD', 'then', "Expected 'then' after condition")  # Handle 'then'
         
-        # Skip non-C keywords like 'then'
-        if self.current_token and self.current_token['lexeme'] == 'then':
-            self.add_error("C syntax doesn't use 'then' keyword")
-            self.advance()
+        # Parse then body until 'else' or 'end'
+        then_body = []
+        while self.current_token and self.current_token['lexeme'] not in ['else', 'end']:
+            stmt = self.parse_statement()
+            if stmt:
+                then_body.append(stmt)
         
-        then_branch = self.parse_statement()
-        else_branch = None
+        # Parse else branch if present
+        else_body = None
+        if self.match('KEYWORD', 'else'):
+            else_body = []
+            while self.current_token and self.current_token['lexeme'] != 'end':
+                stmt = self.parse_statement()
+                if stmt:
+                    else_body.append(stmt)
         
-        # Skip 'else' if present
-        if self.current_token and self.current_token['token_type'] == 'KEYWORD' and self.current_token['lexeme'] == 'else':
-            self.advance()
-            else_branch = self.parse_statement()
+        self.consume('KEYWORD', 'end', "Expected 'end' after if statement")  # Handle 'end'
         
-        # Skip non-C keywords like 'end'
-        if self.current_token and self.current_token['lexeme'] == 'end':
-            self.add_error("C syntax doesn't use 'end' keyword")
-            self.advance()
-            
         return {
             "type": "if_statement",
             "condition": condition,
-            "then_branch": then_branch,
-            "else_branch": else_branch
+            "then_branch": then_body,
+            "else_branch": else_body,
+            "line": start_line
         }
-    
+
+    def parse_block(self):
+        """Parse a block of statements until 'end' is encountered"""
+        statements = []
+        while self.current_token and self.current_token['lexeme'] != 'end':
+            stmt = self.parse_statement()
+            if stmt:
+                statements.append(stmt)
+        self.consume('KEYWORD', 'end', "Expected 'end' after block")
+        return {"type": "block", "body": statements}
+
     def parse_while_statement(self):
+        start_line = self.current_token['line']
         self.advance()  # consume 'while'
         
-        has_parens = self.match('SYMBOL', '(')
         condition = self.parse_expression()
-        if has_parens:
-            self.consume('SYMBOL', ')', "Expected ')' after condition")
         
-        body = self.parse_statement()
+        # Parse body until 'end'
+        body = []
+        while self.current_token and self.current_token['lexeme'] != 'end':
+            stmt = self.parse_statement()
+            if stmt:
+                body.append(stmt)
+        
+        self.consume('KEYWORD', 'end', "Expected 'end' after while body")  # Handle 'end'
         
         return {
             "type": "while_statement",
             "condition": condition,
-            "body": body
+            "body": body,
+            "line": start_line
         }
     
     def parse_for_statement(self):
@@ -503,7 +544,41 @@ class Parser:
             "update": update,
             "body": body
         }
+
+    def parse_shift(self):
+        expr = self.parse_additive()
         
+        while self.current_token and self.current_token['token_type'] == 'OP' and \
+            self.current_token['lexeme'] in ['<<', '>>']:
+            operator = self.current_token['lexeme']
+            self.advance()
+            right = self.parse_additive()
+            expr = {
+                "type": "binary_expression",
+                "operator": operator,
+                "left": expr,
+                "right": right
+            }
+            
+        return expr
+        
+    def parse_additive(self):
+        expr = self.parse_shift()  # Changed from parse_multiplicative()
+        
+        while self.current_token and self.current_token['token_type'] == 'OP' and \
+            self.current_token['lexeme'] in ['+', '-']:
+            operator = self.current_token['lexeme']
+            self.advance()
+            right = self.parse_shift()  # Changed from parse_multiplicative()
+            expr = {
+                "type": "binary_expression",
+                "operator": operator,
+                "left": expr,
+                "right": right
+            }
+            
+        return expr
+
     def parse_for_update(self):
         """Parse the update expression in a for loop, handling postfix operators"""
         if not self.current_token:
@@ -618,7 +693,7 @@ class Parser:
     def parse_expression(self):
         if self.is_expression_terminator():
             return None
-        return self.parse_assignment()
+        return self.parse_logical_or()
     
     def parse_assignment(self):
         if self.is_expression_terminator():
@@ -659,13 +734,13 @@ class Parser:
         return expr
     
     def parse_relational(self):
-        expr = self.parse_additive()
+        expr = self.parse_additive()  # This now calls parse_shift indirectly
         
         while self.current_token and self.current_token['token_type'] == 'OP' and \
             self.current_token['lexeme'] in ['<', '>', '<=', '>=']:
             operator = self.current_token['lexeme']
             self.advance()
-            right = self.parse_additive()
+            right = self.parse_additive()  # This now calls parse_shift indirectly
             expr = {
                 "type": "binary_expression",
                 "operator": operator,
@@ -838,6 +913,40 @@ class Parser:
                 break
                 
         return args
+
+    def parse_logical_or(self):
+        expr = self.parse_logical_and()
+        
+        while self.current_token and self.current_token['token_type'] == 'OP' and \
+            self.current_token['lexeme'] == '||':
+            operator = self.current_token['lexeme']
+            self.advance()
+            right = self.parse_logical_and()
+            expr = {
+                "type": "binary_expression",
+                "operator": operator,
+                "left": expr,
+                "right": right
+            }
+            
+        return expr
+
+    def parse_logical_and(self):
+        expr = self.parse_assignment()  # Changed from parse_equality()
+        
+        while self.current_token and self.current_token['token_type'] == 'OP' and \
+            self.current_token['lexeme'] == '&&':
+            operator = self.current_token['lexeme']
+            self.advance()
+            right = self.parse_assignment()
+            expr = {
+                "type": "binary_expression",
+                "operator": operator,
+                "left": expr,
+                "right": right
+            }
+            
+        return expr
     
     def parse_starting_point(self):
         self.consume('ID', 'main', "Expected 'main'")
@@ -861,12 +970,47 @@ class Parser:
             "body": body
         }
 
+def transform_ast(node):
+    if isinstance(node, dict):
+        # First, recursively transform all children
+        for key in list(node.keys()):
+            node[key] = transform_ast(node[key])
+        
+        # Replace postfix_expression with assignment
+        if node.get('type') == 'postfix_expression' and node.get('operator') in ['++', '--']:
+            operator = node['operator']
+            operand = node['operand']
+            
+            # Create new assignment node
+            return {
+                "type": "assignment_expression",
+                "operator": "=",
+                "left": operand,
+                "right": {
+                    "type": "binary_expression",
+                    "operator": "+" if operator == "++" else "-",
+                    "left": operand,
+                    "right": {
+                        "type": "integer_literal",
+                        "value": 1
+                    }
+                }
+            }
+        return node
+    elif isinstance(node, list):
+        return [transform_ast(item) for item in node]
+    else:
+        return node
+
 
 @eel.expose
 def parse_code(code):
     tokens, lex_errors = lex(code)
     parser = Parser(tokens, lex_errors)
     ast = parser.parse()
+    
+    # Apply transformation to AST
+    transformed_ast = transform_ast(ast)
     
     # Convert to JSON-serializable format
     def convert_node(node):
@@ -877,7 +1021,7 @@ def parse_code(code):
         else:
             return node
             
-    json_ast = convert_node(ast)
+    json_ast = convert_node(transformed_ast)
     all_errors = lex_errors + parser.errors
     
     # Write AST and errors to files
